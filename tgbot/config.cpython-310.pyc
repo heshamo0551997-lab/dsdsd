@@ -1,0 +1,2283 @@
+<!DOCTYPE html>
+<html lang="zh" dir="ltr" data-lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>TG Monitor Pro · 管理后台</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sb:280px; --pri:#4361ee; --pri2:#3a56d4; --pri-light:#eef2ff;
+  --dark:#0b1120; --dark2:#111827; --dark3:#1e293b;
+  --card:#fff; --bg:#f0f2f5; --txt:#1e293b; --muted:#64748b; --line:#e8ecf0;
+  --ok:#10b981; --danger:#ef4444; --warn:#f59e0b; --info:#3b82f6; --purple:#8b5cf6;
+  --r:16px; --rs:10px; --sh:0 4px 24px rgba(15,23,42,.07); --sh2:0 8px 32px rgba(15,23,42,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html[dir=rtl] .ms-auto{margin-right:auto!important;margin-left:0!important}
+html[dir=ltr] .me-auto{margin-left:auto!important;margin-right:0!important}
+body{font-family:'Cairo','Noto Sans SC','Inter',system-ui,sans-serif;background:var(--bg);color:var(--txt)}
+a{color:var(--pri);text-decoration:none}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.14);border-radius:3px}
+
+/* ═══ SIDEBAR ═══ */
+.sidebar{
+  width:var(--sb);height:100vh;position:fixed;top:0;right:0;
+  background:linear-gradient(180deg,var(--dark) 0%,var(--dark2) 60%,#0f1f3d 100%);
+  color:#fff;z-index:1000;box-shadow:-4px 0 30px rgba(0,0,0,.25);
+  display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;
+  transition:transform .3s ease;
+}
+html[dir=ltr] .sidebar{right:auto;left:0;box-shadow:4px 0 30px rgba(0,0,0,.25)}
+
+.sb-head{
+  padding:24px 18px 16px;text-align:center;
+  border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;
+  background:linear-gradient(135deg,rgba(67,97,238,.2) 0%,transparent 100%);
+}
+.sb-logo{
+  width:54px;height:54px;background:linear-gradient(135deg,var(--pri),#7c3aed);
+  border-radius:14px;display:flex;align-items:center;justify-content:center;
+  margin:0 auto 12px;font-size:22px;box-shadow:0 8px 20px rgba(67,97,238,.45);
+}
+.sb-title{font-size:17px;font-weight:800;color:#fff;letter-spacing:.5px;line-height:1.2}
+.sb-version{font-size:11px;color:rgba(255,255,255,.3);margin-top:4px;letter-spacing:.5px}
+
+/* Live status in sidebar */
+.sb-status{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  margin-top:10px;font-size:12px;color:rgba(255,255,255,.5);
+}
+.pulse-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--ok);flex-shrink:0;
+  box-shadow:0 0 0 0 rgba(16,185,129,.5);
+  animation:pulse 2s infinite;
+}
+.pulse-dot.danger{background:var(--danger);box-shadow:0 0 0 0 rgba(239,68,68,.5)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.5)}70%{box-shadow:0 0 0 8px rgba(16,185,129,0)}100%{box-shadow:0 0 0 0 rgba(16,185,129,0)}}
+.pulse-dot.danger{animation:pulseRed 2s infinite}
+@keyframes pulseRed{0%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}70%{box-shadow:0 0 0 8px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
+
+.nav-group{padding:14px 16px 5px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.22)}
+.nav-list{padding:0 10px;list-style:none;margin:0}
+.nav-item{margin-bottom:2px}
+.nav-link{
+  display:flex;align-items:center;gap:11px;padding:11px 14px;
+  color:rgba(255,255,255,.5);border-radius:12px;font-weight:600;font-size:13px;
+  transition:all .2s ease;cursor:pointer;
+}
+.nav-link .nav-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:rgba(255,255,255,.05);transition:all .2s}
+.nav-link:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.9);transform:translateX(-3px)}
+html[dir=ltr] .nav-link:hover{transform:translateX(3px)}
+.nav-link.active{background:linear-gradient(135deg,var(--pri),#6366f1);color:#fff;box-shadow:0 4px 16px rgba(67,97,238,.4)}
+.nav-link.active .nav-icon{background:rgba(255,255,255,.2)}
+.nav-link.logout{color:#f87171}
+.nav-link.logout:hover{background:rgba(248,113,113,.1);color:#fca5a5;transform:none}
+.sb-foot{padding:12px 10px;border-top:1px solid rgba(255,255,255,.07);margin-top:auto;flex-shrink:0}
+
+/* ═══ MAIN ═══ */
+.main{margin-right:var(--sb);min-height:100vh;transition:margin .3s ease}
+html[dir=ltr] .main{margin-right:0;margin-left:var(--sb)}
+
+/* ═══ TOPBAR ═══ */
+.topbar{
+  background:var(--card);border-bottom:1px solid var(--line);
+  padding:0 28px;height:62px;display:flex;align-items:center;gap:14px;
+  position:sticky;top:0;z-index:500;box-shadow:0 2px 10px rgba(0,0,0,.04);
+}
+.topbar-titles{flex:1}
+.topbar-title{font-size:15px;font-weight:800;color:var(--txt)}
+.topbar-sub{font-size:12px;color:var(--muted);margin-top:1px}
+
+/* Live connection badge */
+.live-badge{
+  display:flex;align-items:center;gap:6px;padding:6px 12px;
+  background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #bbf7d0;
+  border-radius:20px;font-size:12px;font-weight:700;color:#166534;
+  animation:fadeIn .5s ease;
+}
+.live-badge .dot{width:7px;height:7px;border-radius:50%;background:#16a34a;animation:pulse 1.5s infinite}
+.live-badge.offline{background:linear-gradient(135deg,#fef2f2,#fee2e2);border-color:#fecaca;color:#991b1b}
+.live-badge.offline .dot{background:var(--danger);animation:pulseRed 1.5s infinite}
+
+/* Clock */
+#live-clock{font-size:13px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* Lang switcher */
+.lang-sw{display:flex;gap:4px;background:#f1f5f9;border-radius:20px;padding:3px}
+.lang-sw button{border:none;background:none;padding:4px 10px;border-radius:16px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;transition:all .2s}
+.lang-sw button.active{background:#fff;color:var(--pri);box-shadow:0 2px 6px rgba(0,0,0,.1)}
+
+.content{padding:28px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══ SECTIONS ═══ */
+.sec{display:none;animation:fadeIn .35s ease}
+.sec.active{display:block}
+
+/* ═══ STATS CARDS ═══ */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{
+  background:var(--card);border-radius:var(--r);padding:22px;
+  box-shadow:var(--sh);display:flex;align-items:center;gap:16px;
+  cursor:pointer;transition:all .3s ease;border:1px solid transparent;
+  position:relative;overflow:hidden;
+}
+.stat-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--c1,.5),var(--c2,.5));opacity:0;transition:opacity .3s}
+.stat-card:hover{transform:translateY(-5px);box-shadow:var(--sh2);border-color:var(--pri-light)}
+.stat-card:hover::before{opacity:.04}
+.stat-card:active{transform:translateY(-2px)}
+.si{
+  width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+  font-size:22px;flex-shrink:0;position:relative;z-index:1;
+}
+.si-blue{background:#eef2ff;color:var(--pri)} .si-green{background:#f0fdf4;color:var(--ok)} .si-yellow{background:#fffbeb;color:var(--warn)}
+.si-purple{background:#f5f3ff;color:var(--purple)} .si-red{background:#fff1f2;color:var(--danger)} .si-cyan{background:#ecfeff;color:#0891b2}
+.sn{font-size:32px;font-weight:800;color:var(--txt);line-height:1;transition:all .5s ease;position:relative;z-index:1}
+.sl{font-size:12px;color:var(--muted);margin-top:4px;font-weight:600;position:relative;z-index:1}
+
+/* ═══ CARD BOX ═══ */
+.cb{background:var(--card);border-radius:var(--r);padding:24px;box-shadow:var(--sh);margin-bottom:20px;border:1px solid rgba(0,0,0,.03)}
+.cb-title{font-weight:800;font-size:15px;color:var(--txt);display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.cb-title .icon-badge{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.cb-title .ib-blue{background:#eef2ff;color:var(--pri)} .cb-title .ib-green{background:#f0fdf4;color:var(--ok)}
+.cb-title .ib-yellow{background:#fffbeb;color:var(--warn)} .cb-title .ib-red{background:#fff1f2;color:var(--danger)}
+.cb-title .ib-purple{background:#f5f3ff;color:var(--purple)} .cb-title .ib-cyan{background:#ecfeff;color:#0891b2}
+.cb-title .ib-gray{background:#f1f5f9;color:var(--muted)}
+.cb-actions{margin-right:auto;display:flex;gap:8px;flex-wrap:wrap}
+html[dir=ltr] .cb-actions{margin-left:auto;margin-right:0}
+
+/* ═══ TABLE ═══ */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f8fafc;color:var(--muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;padding:12px 14px;border-bottom:2px solid var(--line);white-space:nowrap;text-align:right}
+html[dir=ltr] th{text-align:left}
+td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle;color:var(--txt)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafbfc}
+.tbl-wrap{overflow-x:auto;border-radius:var(--rs);border:1px solid var(--line)}
+
+/* ═══ BADGES ═══ */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;line-height:1.4;white-space:nowrap}
+.bg-ok{background:#dcfce7;color:#166534} .bg-warn{background:#fef9c3;color:#854d0e}
+.bg-fail{background:#fee2e2;color:#991b1b} .bg-info{background:#dbeafe;color:#1e40af}
+.bg-gray{background:#f1f5f9;color:#475569} .bg-purple{background:#ede9fe;color:#5b21b6}
+.text-pri{color:var(--pri)} .text-ok{color:var(--ok)} .fw800{font-weight:800}
+
+/* ═══ FORMS ═══ */
+.fg{margin-bottom:14px}
+label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px;letter-spacing:.2px}
+input,textarea,select{width:100%;padding:10px 13px;border:1.5px solid var(--line);border-radius:var(--rs);font-size:13px;color:var(--txt);background:var(--card);outline:none;transition:border .2s,box-shadow .2s;font-family:inherit}
+input:focus,textarea:focus,select:focus{border-color:var(--pri);box-shadow:0 0 0 3px rgba(67,97,238,.1)}
+textarea{resize:vertical;min-height:80px}
+input[type=file]{padding:7px 11px}
+
+/* ═══ BUTTONS ═══ */
+.btn-pri{border:none;border-radius:var(--rs);padding:10px 20px;background:linear-gradient(135deg,var(--pri),#6366f1);color:#fff;cursor:pointer;font-size:13px;font-weight:700;transition:all .2s;box-shadow:0 4px 12px rgba(67,97,238,.3);font-family:inherit}
+.btn-pri:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(67,97,238,.4)}
+.btn-pri:active{transform:none;box-shadow:none}
+.btn-ghost{border:1.5px solid var(--line);border-radius:var(--rs);padding:9px 18px;background:#fff;color:var(--txt);cursor:pointer;font-size:13px;font-weight:700;transition:all .2s;font-family:inherit}
+.btn-ghost:hover{border-color:var(--pri);color:var(--pri);background:var(--pri-light)}
+.btn-ok{border:none;border-radius:var(--rs);padding:10px 20px;background:linear-gradient(135deg,var(--ok),#059669);color:#fff;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;box-shadow:0 4px 12px rgba(16,185,129,.3)}
+.btn-ok:hover{box-shadow:0 6px 18px rgba(16,185,129,.4);transform:translateY(-1px)}
+.btn-danger{border:none;border-radius:var(--rs);padding:10px 20px;background:linear-gradient(135deg,var(--danger),#dc2626);color:#fff;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;box-shadow:0 4px 12px rgba(239,68,68,.25)}
+.btn-danger:hover{box-shadow:0 6px 18px rgba(239,68,68,.35);transform:translateY(-1px)}
+.btn-warn{border:none;border-radius:var(--rs);padding:9px 16px;background:linear-gradient(135deg,var(--warn),#d97706);color:#fff;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit}
+.btn-sm{padding:6px 12px!important;font-size:12px!important}
+.btn-xs{padding:4px 9px!important;font-size:11px!important;border-radius:7px!important}
+button:disabled{opacity:.6;cursor:not-allowed;transform:none!important}
+.actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+
+/* ═══ ALERTS ═══ */
+.alert{padding:12px 16px;border-radius:var(--rs);font-size:13px;margin-bottom:14px;display:flex;align-items:flex-start;gap:8px}
+.alert-ok{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
+.alert-err{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+.alert-info{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af}
+.alert-warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+
+/* ═══ SETTINGS SECTION ═══ */
+.settings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}
+.setting-group{background:#f8fafc;border:1.5px solid var(--line);border-radius:14px;overflow:hidden}
+.sg-head{
+  padding:14px 18px;display:flex;align-items:center;gap:12px;
+  background:linear-gradient(135deg,var(--card),#f8fafc);
+  border-bottom:1px solid var(--line);
+}
+.sg-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.sg-label{font-weight:800;font-size:14px;color:var(--txt)}
+.sg-body{padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.sg-field label{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.sg-field input,
+.sg-field textarea,
+.sg-field select{background:#fff;font-size:13px}
+
+/* ═══ SYSTEM ACTION CARDS ═══ */
+.sys-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:24px}
+.sys-card{
+  background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:20px;
+  text-align:center;cursor:pointer;transition:all .25s;
+}
+.sys-card:hover{border-color:var(--pri);box-shadow:var(--sh2);transform:translateY(-3px)}
+.sys-card .sys-icon{width:52px;height:52px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 12px}
+.sys-card .sys-title{font-weight:800;font-size:14px;color:var(--txt);margin-bottom:4px}
+.sys-card .sys-desc{font-size:12px;color:var(--muted)}
+
+/* ═══ MODAL ═══ */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.modal-overlay.show{display:flex;animation:fadeIn .2s ease}
+.modal-box{background:var(--card);border-radius:20px;padding:28px;width:460px;max-width:95vw;box-shadow:0 24px 60px rgba(0,0,0,.2);animation:fadeIn .25s ease}
+.modal-title{font-size:17px;font-weight:800;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+
+/* ═══ TOAST ═══ */
+#toast-container{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast-item{padding:12px 22px;border-radius:12px;font-weight:700;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.18);animation:fadeIn .3s ease,fadeOut .3s ease 2.7s forwards;white-space:nowrap;pointer-events:none}
+.toast-ok{background:var(--ok);color:#fff} .toast-err{background:var(--danger);color:#fff} .toast-info{background:var(--pri);color:#fff}
+@keyframes fadeOut{to{opacity:0;transform:translateY(10px)}}
+
+/* ═══ MISC ═══ */
+.muted{color:var(--muted)} .mini{font-size:12px} .mono{font-family:ui-monospace,monospace;font-size:12px}
+.hidden{display:none!important} .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+code{background:#f1f5f9;padding:2px 7px;border-radius:5px;font-family:monospace;font-size:12px;color:#475569}
+.divider{height:1px;background:var(--line);margin:16px 0}
+.tag{background:var(--pri);color:#fff;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:800;display:inline-block}
+hr.section-hr{border:none;border-top:2px dashed var(--line);margin:20px 0}
+
+/* Reply preview */
+#reply-preview{background:#f8fafc;border:1.5px solid var(--line);border-radius:var(--rs);padding:14px;min-height:64px;font-size:13px;line-height:1.8;word-break:break-word}
+
+/* ═══ NOTIFICATION BELL ═══ */
+.notif-bell{
+  position:relative;width:38px;height:38px;border-radius:10px;
+  border:1.5px solid var(--line);background:#fff;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--muted);font-size:16px;
+  transition:all .2s;flex-shrink:0;
+}
+.notif-bell:hover{border-color:var(--pri);color:var(--pri);background:var(--pri-light)}
+.notif-badge{
+  position:absolute;top:-5px;right:-5px;
+  background:var(--danger);color:#fff;font-size:10px;font-weight:800;
+  border-radius:10px;padding:1px 5px;min-width:17px;text-align:center;
+  border:2px solid #fff;animation:badgePop .3s ease;
+}
+@keyframes badgePop{from{transform:scale(0)}to{transform:scale(1)}}
+.nav-notif-dot{
+  position:absolute;top:-2px;right:-2px;width:8px;height:8px;
+  border-radius:50%;background:var(--danger);border:2px solid var(--dark2);
+}
+
+/* ═══ REALTIME MONITOR ═══ */
+.rt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px}
+.rt-card{
+  background:var(--card);border-radius:14px;padding:18px;
+  border:1.5px solid var(--line);display:flex;align-items:center;gap:14px;
+  transition:all .25s;
+}
+.rt-card:hover{border-color:var(--pri);box-shadow:var(--sh)}
+.rt-icon{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.rt-val{font-size:26px;font-weight:800;color:var(--txt);line-height:1}
+.rt-lbl{font-size:11px;color:var(--muted);font-weight:600;margin-top:3px}
+.rt-status{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700}
+.rt-ok{color:var(--ok)} .rt-err{color:var(--danger)} .rt-warn{color:var(--warn)}
+
+/* ═══ ACTIVITY FEED ═══ */
+.activity-list{list-style:none;padding:0;margin:0;max-height:460px;overflow-y:auto}
+.activity-item{
+  display:flex;align-items:flex-start;gap:12px;padding:13px 0;
+  border-bottom:1px solid var(--line);
+}
+.activity-item:last-child{border-bottom:none}
+.act-icon{
+  width:36px;height:36px;border-radius:10px;display:flex;align-items:center;
+  justify-content:center;font-size:14px;flex-shrink:0;margin-top:1px;
+}
+.act-body{flex:1;min-width:0}
+.act-type{font-size:12px;font-weight:800;color:var(--txt);display:flex;align-items:center;gap:6px}
+.act-user{font-size:12px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.act-detail{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5;word-break:break-all}
+.act-time{font-size:10px;color:var(--muted);white-space:nowrap;margin-top:1px;font-weight:600}
+.act-new{background:linear-gradient(135deg,rgba(67,97,238,.04),transparent);border-radius:10px;padding:4px 8px;margin:-4px -8px}
+
+/* Event type colors */
+.ev-start{background:#eef2ff;color:var(--pri)}
+.ev-listen{background:#f0fdf4;color:var(--ok)}
+.ev-private{background:#eff6ff;color:#3b82f6}
+.ev-keyword{background:#fffbeb;color:var(--warn)}
+.ev-order{background:#fdf4ff;color:var(--purple)}
+.ev-other{background:#f1f5f9;color:var(--muted)}
+
+/* ═══ FILTER BAR ═══ */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.filter-btn{padding:5px 14px;border-radius:20px;border:1.5px solid var(--line);background:#fff;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;color:var(--muted);font-family:inherit}
+.filter-btn.active{background:var(--pri);border-color:var(--pri);color:#fff}
+.filter-btn:hover:not(.active){border-color:var(--pri);color:var(--pri)}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:992px){
+  .sidebar{transform:translateX(110%);width:260px}
+  html[dir=ltr] .sidebar{transform:translateX(-110%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-right:0!important;margin-left:0!important}
+  .content{padding:16px}
+  .stats-grid,.settings-grid,.sys-actions,.grid2,.grid3,.rt-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ TOAST ══ -->
+<div id="toast-container"></div>
+
+<!-- ══ SIDEBAR ══ -->
+<nav class="sidebar" id="sidebar">
+  <div class="sb-head">
+    <div class="sb-logo"><i class="fas fa-satellite-dish" style="color:#fff;font-size:24px"></i></div>
+    <div class="sb-title">TG MONITOR <span style="color:var(--pri)">PRO</span></div>
+    <div class="sb-version" id="sb-ver-lbl">管理后台</div>
+    <div class="sb-status">
+      <div class="pulse-dot" id="sb-dot"></div>
+      <span id="sb-status-lbl">已连接 · 运行中</span>
+    </div>
+  </div>
+
+  <div class="nav-group" data-i18n="nav_group_main">操作面板</div>
+  <ul class="nav-list">
+    <li class="nav-item"><a class="nav-link active" data-sec="dashboard">
+      <span class="nav-icon"><i class="fas fa-gauge-high"></i></span><span data-i18n="nav_dashboard">概述</span>
+    </a></li>
+  </ul>
+
+  <div class="nav-group" data-i18n="nav_group_users">用户管理</div>
+  <ul class="nav-list">
+    <li class="nav-item"><a class="nav-link" data-sec="users">
+      <span class="nav-icon"><i class="fas fa-users"></i></span><span data-i18n="nav_users">用户管理</span>
+    </a></li>
+    <li class="nav-item"><a class="nav-link" data-sec="orders">
+      <span class="nav-icon"><i class="fas fa-file-invoice-dollar"></i></span><span data-i18n="nav_orders">发票与订单</span>
+    </a></li>
+    <li class="nav-item"><a class="nav-link" data-sec="plans">
+      <span class="nav-icon"><i class="fas fa-crown"></i></span><span data-i18n="nav_plans">高级计划</span>
+    </a></li>
+    <li class="nav-item"><a class="nav-link" data-sec="cards">
+      <span class="nav-icon"><i class="fas fa-ticket"></i></span><span data-i18n="nav_cards">卡密管理</span>
+    </a></li>
+  </ul>
+
+  <div class="nav-group" data-i18n="nav_group_accounts">账号管理</div>
+  <ul class="nav-list">
+    <li class="nav-item"><a class="nav-link" data-sec="accounts">
+      <span class="nav-icon"><i class="fas fa-mobile-screen-button"></i></span><span data-i18n="nav_accounts">主号管理</span>
+    </a></li>
+    <li class="nav-item"><a class="nav-link" data-sec="protocols">
+      <span class="nav-icon"><i class="fas fa-robot"></i></span><span data-i18n="nav_protocols">协议账户</span>
+    </a></li>
+  </ul>
+
+  <div class="nav-group" data-i18n="nav_group_listen">监控系统</div>
+  <ul class="nav-list">
+    <li class="nav-item"><a class="nav-link" data-sec="replies">
+      <span class="nav-icon"><i class="fas fa-comment-medical"></i></span><span data-i18n="nav_replies">自动回复</span>
+    </a></li>
+    <li class="nav-item"><a class="nav-link" data-sec="groups">
+      <span class="nav-icon"><i class="fas fa-tower-broadcast"></i></span><span data-i18n="nav_groups">监听群配置</span>
+    </a></li>
+    <li class="nav-item"><a class="nav-link" data-sec="joinqueue">
+      <span class="nav-icon"><i class="fas fa-rocket"></i></span><span data-i18n="nav_joinqueue">批量加群</span>
+    </a></li>
+    <li class="nav-item"><a class="nav-link" data-sec="listendata">
+      <span class="nav-icon"><i class="fas fa-crosshairs"></i></span><span data-i18n="nav_listendata">监听数据</span>
+    </a></li>
+    <li class="nav-item"><a class="nav-link" data-sec="chatlogs">
+      <span class="nav-icon"><i class="fas fa-envelope-open-text"></i></span><span data-i18n="nav_chatlogs">私信日志</span>
+    </a></li>
+  </ul>
+
+  <div class="nav-group" data-i18n="nav_group_other">其他</div>
+  <ul class="nav-list">
+    <li class="nav-item"><a class="nav-link" data-sec="notifications">
+      <span class="nav-icon" style="position:relative"><i class="fas fa-bell"></i><span class="nav-notif-dot" id="nav-notif-dot" style="display:none"></span></span>
+      <span data-i18n="nav_notifications">通知中心</span>
+    </a></li>
+    <li class="nav-item"><a class="nav-link" data-sec="lead">
+      <span class="nav-icon"><i class="fas fa-toolbox"></i></span><span data-i18n="nav_lead">引流软件</span>
+    </a></li>
+    <li class="nav-item"><a class="nav-link" data-sec="settings">
+      <span class="nav-icon"><i class="fas fa-gears"></i></span><span data-i18n="nav_settings">系统设置</span>
+    </a></li>
+  </ul>
+
+  <div class="sb-foot">
+    <ul class="nav-list">
+      <li class="nav-item"><a class="nav-link logout" onclick="logout()">
+        <span class="nav-icon" style="background:rgba(248,113,113,.12)"><i class="fas fa-arrow-right-from-bracket"></i></span>
+        <span data-i18n="nav_logout">退出登录</span>
+      </a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<div class="main" id="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-titles">
+      <div class="topbar-title" id="page-title">概览</div>
+      <div class="topbar-sub" id="page-sub">系统统计信息和近期活动</div>
+    </div>
+
+    <!-- Live clock -->
+    <div id="live-clock"></div>
+
+    <!-- Connection status -->
+    <div class="live-badge" id="conn-badge">
+      <div class="dot"></div>
+      <span id="conn-lbl">已连接</span>
+    </div>
+
+    <!-- Notifications Bell -->
+    <button class="notif-bell" id="notif-bell" onclick="showSec('notifications')" title="通知中心">
+      <i class="fas fa-bell"></i>
+      <span class="notif-badge" id="notif-badge" style="display:none">0</span>
+    </button>
+
+    <!-- Lang switcher -->
+    <div class="lang-sw">
+      <button onclick="setLang('zh')" id="btn-zh" class="active">中</button>
+      <button onclick="setLang('en')" id="btn-en">EN</button>
+    </div>
+
+    <!-- Refresh -->
+    <button class="btn-ghost btn-sm" onclick="refreshCurrent()" title="刷新">
+      <i class="fas fa-arrows-rotate"></i>
+    </button>
+  </header>
+
+  <div class="content">
+
+    <!-- ══════════ DASHBOARD ══════════ -->
+    <div id="sec-dashboard" class="sec active">
+      <div id="stats-grid" class="stats-grid"></div>
+
+      <!-- Real-time Monitor -->
+      <div class="cb" style="margin-bottom:20px">
+        <div class="cb-title">
+          <span class="icon-badge ib-blue" style="background:linear-gradient(135deg,#eef2ff,#e0e7ff)"><i class="fas fa-signal" style="color:var(--pri)"></i></span>
+          <span data-i18n="dash_realtime">实时监控</span>
+          <span style="font-size:10px;font-weight:600;color:var(--muted);margin-right:4px" id="rt-last-update"></span>
+          <div class="cb-actions">
+            <button class="btn-ghost btn-sm" onclick="loadRealtime()"><i class="fas fa-arrows-rotate"></i></button>
+          </div>
+        </div>
+        <div class="rt-grid" id="rt-grid">
+          <div class="rt-card"><div class="rt-icon" style="background:#eef2ff;color:var(--pri)"><i class="fas fa-robot"></i></div><div><div class="rt-val" id="rt-bot">—</div><div class="rt-lbl" data-i18n="rt_bot_status">机器人状态</div></div></div>
+          <div class="rt-card"><div class="rt-icon" style="background:#f0fdf4;color:var(--ok)"><i class="fas fa-users"></i></div><div><div class="rt-val" id="rt-active">—</div><div class="rt-lbl" data-i18n="rt_active_users">活跃用户</div></div></div>
+          <div class="rt-card"><div class="rt-icon" style="background:#fffbeb;color:var(--warn)"><i class="fas fa-file-invoice-dollar"></i></div><div><div class="rt-val" id="rt-pending">—</div><div class="rt-lbl" data-i18n="rt_pending_orders">待处理订单</div></div></div>
+          <div class="rt-card"><div class="rt-icon" style="background:#f5f3ff;color:var(--purple)"><i class="fas fa-mobile-screen-button"></i></div><div><div class="rt-val" id="rt-accounts">—</div><div class="rt-lbl" data-i18n="rt_accounts">主号 / 在线</div></div></div>
+          <div class="rt-card"><div class="rt-icon" style="background:#ecfeff;color:#0891b2"><i class="fas fa-tower-broadcast"></i></div><div><div class="rt-val" id="rt-groups">—</div><div class="rt-lbl" data-i18n="rt_groups">监控群组</div></div></div>
+          <div class="rt-card"><div class="rt-icon" style="background:#fff1f2;color:var(--danger)"><i class="fas fa-bell"></i></div><div><div class="rt-val" id="rt-events">—</div><div class="rt-lbl" data-i18n="rt_today_events">今日事件</div></div></div>
+        </div>
+      </div>
+
+      <!-- Recent Activity from Bot -->
+      <div class="cb" style="margin-bottom:20px">
+        <div class="cb-title">
+          <span class="icon-badge ib-purple"><i class="fas fa-wave-square"></i></span>
+          <span data-i18n="dash_activity">用户最新动态</span>
+          <div class="cb-actions">
+            <button class="btn-ghost btn-sm" onclick="showSec('notifications')" data-i18n="btn_view_all">查看全部</button>
+          </div>
+        </div>
+        <ul class="activity-list" id="dash-activity-list">
+          <li style="padding:24px;text-align:center;color:var(--muted)"><i class="fas fa-circle-notch fa-spin me-2"></i></li>
+        </ul>
+      </div>
+
+      <!-- Activity feed -->
+      <div class="cb">
+        <div class="cb-title">
+          <span class="icon-badge ib-blue"><i class="fas fa-clock-rotate-left"></i></span>
+          <span data-i18n="dash_recent">最新充值订单</span>
+          <div class="cb-actions">
+            <button class="btn-ghost btn-sm" onclick="showSec('orders')" data-i18n="btn_view_all">查看全部</button>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th data-i18n="th_order_no">订单号</th><th data-i18n="th_user">用户</th><th data-i18n="th_amount">金额</th><th data-i18n="th_status">状态</th><th data-i18n="th_action">操作</th></tr></thead>
+            <tbody id="dash-orders-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ NOTIFICATIONS ══════════ -->
+    <div id="sec-notifications" class="sec">
+      <div class="cb">
+        <div class="cb-title">
+          <span class="icon-badge ib-red"><i class="fas fa-bell"></i></span>
+          <span data-i18n="sec_notifications">活动通知</span>
+          <div class="cb-actions">
+            <div class="filter-bar" id="notif-filter-bar">
+              <button class="filter-btn active" data-filter="" onclick="filterNotif(this,'')">全部</button>
+              <button class="filter-btn" data-filter="user_start" onclick="filterNotif(this,'user_start')">🟢 开始</button>
+              <button class="filter-btn" data-filter="listen_on" onclick="filterNotif(this,'listen_on')">📡 监听</button>
+              <button class="filter-btn" data-filter="keyword_add" onclick="filterNotif(this,'keyword_add')">🔑 关键词</button>
+              <button class="filter-btn" data-filter="order_created" onclick="filterNotif(this,'order_created')">💳 订单</button>
+            </div>
+            <button class="btn-danger btn-sm" onclick="clearEvents()"><i class="fas fa-trash me-1"></i><span data-i18n="btn_clear">清空</span></button>
+          </div>
+        </div>
+        <ul class="activity-list" id="notif-list" style="max-height:600px">
+          <li style="padding:40px;text-align:center;color:var(--muted)"><i class="fas fa-circle-notch fa-spin me-2"></i></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ══════════ USERS ══════════ -->
+    <div id="sec-users" class="sec">
+      <div class="cb">
+        <div class="cb-title">
+          <span class="icon-badge ib-blue"><i class="fas fa-users"></i></span>
+          <span data-i18n="sec_users">用户管理</span>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Telegram ID</th><th data-i18n="th_nickname">昵称</th><th data-i18n="th_plan">套餐</th><th data-i18n="th_kw_limit">关键词限制</th><th data-i18n="th_balance">余额</th><th data-i18n="th_expiry">到期</th><th data-i18n="th_listen">监听</th><th data-i18n="th_manage">操作</th></tr></thead>
+            <tbody id="users-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ ORDERS ══════════ -->
+    <div id="sec-orders" class="sec">
+      <div class="cb">
+        <div class="cb-title">
+          <span class="icon-badge ib-yellow"><i class="fas fa-file-invoice-dollar"></i></span>
+          <span data-i18n="sec_orders">发票与订单</span>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th data-i18n="th_order_no">订单号</th><th data-i18n="th_user">用户</th><th data-i18n="th_plan">套餐</th><th data-i18n="th_amount">金额</th><th data-i18n="th_status">状态</th><th data-i18n="th_date">日期</th><th data-i18n="th_action">操作</th></tr></thead>
+            <tbody id="orders-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ PLANS ══════════ -->
+    <div id="sec-plans" class="sec">
+      <div class="grid2">
+        <div class="cb">
+          <div class="cb-title">
+            <span class="icon-badge ib-yellow"><i class="fas fa-crown"></i></span>
+            <span data-i18n="sec_plans">高级计划</span>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th data-i18n="th_group">群组</th><th data-i18n="th_name">名称</th><th data-i18n="th_days">天数</th><th data-i18n="th_kw_limit">关键词限制</th><th data-i18n="th_price">价格 (U)</th><th data-i18n="th_manage">操作</th></tr></thead>
+              <tbody id="plans-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="cb">
+          <div class="cb-title">
+            <span class="icon-badge ib-blue"><i class="fas fa-plus-circle"></i></span>
+            <span id="plan-form-title" data-i18n="add_plan">添加计划</span>
+          </div>
+          <div class="fg"><label data-i18n="lbl_group">群组</label><input id="plan-group" placeholder="基础套餐"/></div>
+          <div class="fg"><label data-i18n="lbl_name">名称</label><input id="plan-name" placeholder="月付"/></div>
+          <div class="grid2" style="gap:10px">
+            <div class="fg"><label data-i18n="lbl_days">天数</label><input id="plan-days" type="number" placeholder="30"/></div>
+            <div class="fg"><label data-i18n="lbl_kw_limit">关键词限制</label><input id="plan-limit" type="number" placeholder="50"/></div>
+          </div>
+          <div class="grid2" style="gap:10px">
+            <div class="fg"><label data-i18n="lbl_price">价格 (U)</label><input id="plan-price" type="number" step="0.01" placeholder="9.99"/></div>
+            <div class="fg"><label data-i18n="lbl_sort">排序</label><input id="plan-sort" type="number" placeholder="0"/></div>
+          </div>
+          <input type="hidden" id="plan-id"/>
+          <div class="actions">
+            <button class="btn-pri" onclick="savePlan()"><i class="fas fa-save me-1"></i><span data-i18n="btn_save">保存</span></button>
+            <button class="btn-ghost" onclick="resetPlanForm()" data-i18n="btn_cancel">取消</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ CARDS ══════════ -->
+    <div id="sec-cards" class="sec">
+      <div class="grid2">
+        <div class="cb">
+          <div class="cb-title">
+            <span class="icon-badge ib-purple"><i class="fas fa-ticket"></i></span>
+            <span data-i18n="sec_cards">卡密列表</span>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th data-i18n="th_code">卡密</th><th data-i18n="th_plan">套餐</th><th data-i18n="th_status">状态</th><th data-i18n="th_used_at">使用时间</th><th></th></tr></thead>
+              <tbody id="cards-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="cb">
+          <div class="cb-title">
+            <span class="icon-badge ib-yellow"><i class="fas fa-bolt"></i></span>
+            <span data-i18n="gen_cards">生成卡密</span>
+          </div>
+          <div class="fg"><label data-i18n="lbl_select_plan">选择计划</label><select id="card-plan-id"></select></div>
+          <div class="grid2" style="gap:10px">
+            <div class="fg"><label data-i18n="lbl_count">数量</label><input id="card-count" type="number" value="5" min="1" max="100"/></div>
+            <div class="fg"><label data-i18n="lbl_prefix">前缀（可选）</label><input id="card-prefix" placeholder="VIP"/></div>
+          </div>
+          <button class="btn-pri" onclick="generateCards()" style="width:100%">
+            <i class="fas fa-bolt me-1"></i><span data-i18n="btn_generate">生成</span>
+          </button>
+          <div id="cards-result" style="margin-top:14px;display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ ACCOUNTS ══════════ -->
+    <div id="sec-accounts" class="sec">
+      <div class="cb mb4">
+        <div class="cb-title">
+          <span class="icon-badge ib-blue"><i class="fas fa-circle-plus"></i></span>
+          <span id="acc-form-title" data-i18n="add_account">添加主号</span>
+        </div>
+        <div class="grid3">
+          <div class="fg"><label><i class="fas fa-signature fa-xs me-1"></i><span data-i18n="lbl_acc_name">账号名称</span></label><input id="acc-name" placeholder="监控号1"/></div>
+          <div class="fg"><label><i class="fas fa-phone fa-xs me-1"></i><span data-i18n="lbl_phone">手机号</span></label><input id="acc-phone" placeholder="+9665xxxxxxxx"/></div>
+          <div class="fg"><label><i class="fas fa-key fa-xs me-1"></i>API ID</label><input id="acc-api-id" placeholder="来自 my.telegram.org"/></div>
+          <div class="fg"><label><i class="fas fa-hashtag fa-xs me-1"></i>API HASH</label><input id="acc-api-hash"/></div>
+          <div class="fg"><label><i class="fas fa-shield fa-xs me-1"></i><span data-i18n="lbl_proxy">代理（可选）</span></label><input id="acc-proxy" placeholder="socks5://host:port"/></div>
+          <div class="fg"><label><i class="fas fa-note-sticky fa-xs me-1"></i><span data-i18n="lbl_remark">备注</span></label><input id="acc-remark"/></div>
+        </div>
+        <input type="hidden" id="acc-id"/>
+        <div class="actions">
+          <button class="btn-pri" onclick="saveAccount()"><i class="fas fa-save me-1"></i><span data-i18n="btn_save">保存</span></button>
+          <button class="btn-ghost" onclick="resetAccForm()" data-i18n="btn_cancel">取消</button>
+        </div>
+      </div>
+      <div class="cb">
+        <div class="cb-title">
+          <span class="icon-badge ib-blue"><i class="fas fa-mobile-screen-button"></i></span>
+          <span data-i18n="sec_accounts">主号列表</span>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>ID</th><th data-i18n="th_name">名称</th><th data-i18n="th_phone">手机号</th><th data-i18n="th_online">在线</th><th data-i18n="th_login_status">登录状态</th><th data-i18n="th_manage">操作</th></tr></thead>
+            <tbody id="accounts-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="cb hidden" id="session-panel">
+        <div class="cb-title">
+          <span class="icon-badge ib-yellow"><i class="fas fa-key"></i></span>
+          <span data-i18n="update_session">更新 Session</span> — <span id="session-acc-name" class="text-pri"></span>
+        </div>
+        <div class="grid2">
+          <div>
+            <label data-i18n="session_paste">粘贴 Session 文本</label>
+            <textarea id="session-str" placeholder="Telethon Session String..." style="height:110px;margin-bottom:10px"></textarea>
+            <button class="btn-pri" onclick="submitSessionStr()"><i class="fas fa-save me-1"></i><span data-i18n="btn_save_session">保存Session</span></button>
+          </div>
+          <div>
+            <label data-i18n="session_upload">上传 Session 文件 (.txt / .zip)</label>
+            <input type="file" id="session-file" accept=".txt,.zip,.session" style="margin-bottom:10px"/>
+            <button class="btn-ok" onclick="uploadSessionFile()"><i class="fas fa-upload me-1"></i><span data-i18n="btn_upload">上传文件</span></button>
+          </div>
+        </div>
+        <input type="hidden" id="session-acc-id"/>
+        <div style="margin-top:14px"><button class="btn-ghost btn-sm" onclick="$('session-panel').classList.add('hidden')"><i class="fas fa-times me-1"></i><span data-i18n="btn_close">关闭</span></button></div>
+      </div>
+    </div>
+
+    <!-- ══════════ PROTOCOLS ══════════ -->
+    <div id="sec-protocols" class="sec">
+      <div class="cb mb4">
+        <div class="cb-title">
+          <span class="icon-badge ib-blue"><i class="fas fa-file-import"></i></span>
+          <span data-i18n="import_protocols">导入协议账号</span>
+        </div>
+        <div class="grid3">
+          <div class="fg"><label><i class="fas fa-user-tie fa-xs me-1"></i><span data-i18n="lbl_owner">所属用户</span></label><select id="prot-user-id"></select></div>
+          <div class="fg"><label><i class="fas fa-shield fa-xs me-1"></i><span data-i18n="lbl_proxy">代理（可选）</span> <span class="badge" style="background:var(--warn);color:#000;font-size:10px;padding:2px 6px;border-radius:4px">batch</span></label><input id="prot-proxy" placeholder="socks5://user:pass@host:port" style="font-size:12px"/></div>
+          <div class="fg"><label><i class="fas fa-file-zipper fa-xs me-1"></i><span data-i18n="lbl_package_file">包文件 (.zip)</span></label><input type="file" id="prot-file" accept=".zip,.tar,.gz"/></div>
+        </div>
+        <div class="actions">
+          <button class="btn-pri" onclick="importProtocols()"><i class="fas fa-upload me-1"></i><span data-i18n="btn_import">导入</span></button>
+          <button class="btn-danger" onclick="deleteInactiveProtocols()"><i class="fas fa-broom me-1"></i><span data-i18n="btn_clean">清除异常</span></button>
+        </div>
+      </div>
+      <div class="cb">
+        <div class="cb-title">
+          <span class="icon-badge ib-purple"><i class="fas fa-robot"></i></span>
+          <span data-i18n="sec_protocols">协议账号</span>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>ID</th><th data-i18n="th_owner">所属</th><th data-i18n="th_phone">手机号</th><th data-i18n="th_username">用户名</th><th data-i18n="th_proxy">代理</th><th data-i18n="th_status">状态</th><th data-i18n="th_outbound">外发</th><th data-i18n="th_date">日期</th><th></th></tr></thead>
+            <tbody id="protocols-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ REPLIES ══════════ -->
+    <div id="sec-replies" class="sec">
+      <div class="grid2">
+        <div class="cb">
+          <div class="cb-title">
+            <span class="icon-badge ib-blue"><i class="fas fa-comments"></i></span>
+            <span data-i18n="sec_replies">自动回复</span>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>ID</th><th data-i18n="th_owner">所属</th><th data-i18n="th_keyword">关键词</th><th data-i18n="th_content">内容</th><th data-i18n="th_date">日期</th><th></th></tr></thead>
+              <tbody id="replies-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="cb">
+          <div class="cb-title">
+            <span class="icon-badge ib-green"><i class="fas fa-plus-circle"></i></span>
+            <span data-i18n="add_reply">添加回复</span>
+          </div>
+          <div class="fg"><label><i class="fas fa-user fa-xs me-1"></i><span data-i18n="lbl_user">用户</span></label><select id="reply-user-id"></select></div>
+          <div class="fg"><label><i class="fas fa-magnifying-glass fa-xs me-1"></i><span data-i18n="lbl_keyword">关键词</span></label><input id="reply-keyword" placeholder="输入关键词..."/></div>
+          <div class="fg"><label><i class="fas fa-message fa-xs me-1"></i><span data-i18n="lbl_reply_content">回复内容</span></label><textarea id="reply-content" placeholder="回复内容..."></textarea></div>
+          <div class="fg">
+            <label class="text-muted mini"><i class="fas fa-eye fa-xs me-1"></i><span data-i18n="lbl_preview">预览</span></label>
+            <div id="reply-preview"><span class="muted mini" data-i18n="preview_placeholder">输入内容以查看预览...</span></div>
+          </div>
+          <button class="btn-pri" onclick="addAutoReply()" style="width:100%"><i class="fas fa-save me-1"></i><span data-i18n="btn_save_reply">保存回复</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ GROUPS ══════════ -->
+    <div id="sec-groups" class="sec">
+      <div class="cb mb4">
+        <div class="cb-title">
+          <span class="icon-badge ib-blue"><i class="fas fa-circle-plus"></i></span>
+          <span data-i18n="add_group">手动添加群组</span>
+        </div>
+        <div class="grid3">
+          <div class="fg"><label><i class="fas fa-mobile-screen-button fa-xs me-1"></i><span data-i18n="lbl_main_acc">主号</span></label><select id="group-acc-id"></select></div>
+          <div class="fg"><label><i class="fas fa-hashtag fa-xs me-1"></i><span data-i18n="lbl_group_id">群组ID</span></label><input id="group-id" placeholder="-100xxxxxxxxxx"/></div>
+          <div class="fg"><label><i class="fas fa-layer-group fa-xs me-1"></i><span data-i18n="lbl_group_name">群组名称</span></label><input id="group-title" placeholder="群组名称"/></div>
+          <div class="fg" style="grid-column:1/-1"><label><i class="fas fa-at fa-xs me-1"></i><span data-i18n="lbl_username">用户名（可选）</span></label><input id="group-username" placeholder="无 @"/></div>
+        </div>
+        <button class="btn-pri" onclick="addGroup()"><i class="fas fa-plus me-1"></i><span data-i18n="btn_add">添加</span></button>
+      </div>
+      <div class="cb">
+        <div class="cb-title">
+          <span class="icon-badge ib-cyan"><i class="fas fa-tower-broadcast"></i></span>
+          <span data-i18n="sec_groups">安全组</span>
+          <span class="mini muted" style="font-weight:400">🟢 <span data-i18n="status_active">活动</span> | 🔴 <span data-i18n="status_blocked">已限止</span> | ⚫ <span data-i18n="status_stopped">已停止</span></span>
+          <button class="btn-pri btn-sm" onclick="fetchGroupsFromPage()" style="margin-left:auto"><i class="fas fa-rotate me-1"></i><span data-i18n="btn_fetch_groups">获取群组</span></button>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>ID</th><th data-i18n="th_main_acc">主号</th><th data-i18n="th_group_id">群组ID</th><th data-i18n="th_name">名称</th><th data-i18n="th_username">用户名</th><th data-i18n="th_status">状态</th><th data-i18n="th_manage">操作</th></tr></thead>
+            <tbody id="groups-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ JOIN QUEUE ══════════ -->
+    <div id="sec-joinqueue" class="sec">
+      <div class="grid2" style="align-items:start">
+        <div class="cb">
+          <div class="cb-title">
+            <span class="icon-badge ib-purple"><i class="fas fa-rocket"></i></span>
+            <span data-i18n="add_join_task">添加加群任务</span>
+          </div>
+          <div class="fg"><label><i class="fas fa-mobile-screen-button fa-xs me-1"></i><span data-i18n="lbl_executor">执行账号</span></label><select id="join-acc-id"></select></div>
+          <div class="grid2" style="gap:10px">
+            <div class="fg"><label data-i18n="lbl_min_delay">最小延迟（秒）</label><input id="join-min" type="number" value="300"/></div>
+            <div class="fg"><label data-i18n="lbl_max_delay">最大延迟（秒）</label><input id="join-max" type="number" value="600"/></div>
+          </div>
+          <div class="fg"><label><i class="fas fa-link fa-xs me-1"></i><span data-i18n="lbl_group_links">群组链接（每行一条）</span></label><textarea id="join-links" placeholder="https://t.me/group1&#10;https://t.me/+InviteHash" style="height:140px"></textarea></div>
+          <div class="actions">
+            <button class="btn-pri" onclick="addJoinQueue()"><i class="fas fa-plus me-1"></i><span data-i18n="btn_add_to_queue">加入队列</span></button>
+            <button class="btn-danger btn-sm" onclick="clearDoneQueue()" data-i18n="btn_clear_done">清除已完成</button>
+            <button class="btn-ghost btn-sm" onclick="clearFailedQueue()" data-i18n="btn_clear_failed">清除失败</button>
+          </div>
+          <div class="alert alert-warn mt10">
+            <i class="fas fa-circle-info"></i>
+            <span data-i18n="join_notice">将在指定延迟后自动加入，以绕过限制。</span>
+          </div>
+        </div>
+        <div>
+          <div id="join-stats-grid" class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px"></div>
+          <div class="cb">
+            <div class="cb-title">
+              <span class="icon-badge ib-gray"><i class="fas fa-list-check"></i></span>
+              <span data-i18n="queue_status">队列状态</span>
+              <div class="cb-actions"><button class="btn-ghost btn-sm" onclick="loadJoinQueue()"><i class="fas fa-arrows-rotate"></i></button></div>
+            </div>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>#</th><th data-i18n="th_account">账号</th><th data-i18n="th_link">链接</th><th data-i18n="th_delay">延迟</th><th data-i18n="th_status">状态</th><th data-i18n="th_note">备注</th><th data-i18n="th_exec_time">执行时间</th><th></th></tr></thead>
+                <tbody id="joinqueue-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ LISTEN DATA ══════════ -->
+    <div id="sec-listendata" class="sec">
+      <div class="cb">
+        <div class="cb-title">
+          <span class="icon-badge ib-red"><i class="fas fa-crosshairs"></i></span>
+          <span data-i18n="sec_listendata">监听数据</span>
+          <div class="cb-actions">
+            <button class="btn-ok btn-sm" onclick="exportListened()"><i class="fas fa-download me-1"></i>TXT</button>
+            <button class="btn-danger btn-sm" onclick="clearListened()"><i class="fas fa-trash me-1"></i><span data-i18n="btn_clear_all">清空</span></button>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>#</th><th data-i18n="th_source_group">源群组</th><th data-i18n="th_keyword">关键词</th><th data-i18n="th_user">用户</th><th>Telegram ID</th><th data-i18n="th_message">消息</th><th data-i18n="th_date">日期</th></tr></thead>
+            <tbody id="listendata-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ CHAT LOGS ══════════ -->
+    <div id="sec-chatlogs" class="sec">
+      <div class="cb">
+        <div class="cb-title">
+          <span class="icon-badge ib-blue"><i class="fas fa-envelope-open-text"></i></span>
+          <span data-i18n="sec_chatlogs">私信记录</span>
+          <div class="cb-actions">
+            <button class="btn-ok btn-sm" onclick="exportChatLogs()"><i class="fas fa-download me-1"></i><span data-i18n="btn_export">导出</span></button>
+            <button class="btn-danger btn-sm" onclick="clearChatLogs()"><i class="fas fa-trash me-1"></i><span data-i18n="btn_clear">清空</span></button>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>#</th><th data-i18n="th_user">用户</th><th>Telegram ID</th><th data-i18n="th_content">内容</th><th data-i18n="th_type">类型</th><th data-i18n="th_date">日期</th></tr></thead>
+            <tbody id="chatlogs-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ LEAD ══════════ -->
+    <div id="sec-lead" class="sec">
+      <div class="grid2">
+        <div class="cb">
+          <div class="cb-title">
+            <span class="icon-badge ib-cyan"><i class="fas fa-toolbox"></i></span>
+            <span data-i18n="sec_lead">引流程序</span>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th data-i18n="th_name">名称</th><th data-i18n="th_link">链接</th><th data-i18n="th_desc">描述</th><th data-i18n="th_sort">排序</th><th data-i18n="th_manage">操作</th></tr></thead>
+              <tbody id="lead-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="cb">
+          <div class="cb-title">
+            <span class="icon-badge ib-blue"><i class="fas fa-circle-plus"></i></span>
+            <span id="lead-form-title" data-i18n="add_lead">添加引流程序</span>
+          </div>
+          <div class="fg"><label><i class="fas fa-toolbox fa-xs me-1"></i><span data-i18n="lbl_title">名称</span></label><input id="lead-title" placeholder="程序名称"/></div>
+          <div class="fg"><label><i class="fas fa-link fa-xs me-1"></i><span data-i18n="lbl_url">链接（可选）</span></label><input id="lead-url" placeholder="https://..."/></div>
+          <div class="fg"><label><i class="fas fa-align-left fa-xs me-1"></i><span data-i18n="lbl_desc">描述</span></label><textarea id="lead-desc" placeholder="程序描述..."></textarea></div>
+          <div class="fg"><label><i class="fas fa-sort fa-xs me-1"></i><span data-i18n="lbl_sort">排序</span></label><input id="lead-sort" type="number" value="0"/></div>
+          <input type="hidden" id="lead-id"/>
+          <div class="actions">
+            <button class="btn-pri" onclick="saveLead()"><i class="fas fa-save me-1"></i><span data-i18n="btn_save">保存</span></button>
+            <button class="btn-ghost" onclick="resetLeadForm()" data-i18n="btn_cancel">取消</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ SETTINGS ══════════ -->
+    <div id="sec-settings" class="sec">
+
+      <!-- System action cards -->
+      <div class="sys-actions" style="margin-bottom:24px">
+        <div class="sys-card" onclick="syncDb()">
+          <div class="sys-icon" style="background:#eff6ff;color:#3b82f6"><i class="fas fa-database"></i></div>
+          <div class="sys-title" data-i18n="sys_sync">同步数据库</div>
+          <div class="sys-desc" data-i18n="sys_sync_desc">创建缺失的表和字段</div>
+        </div>
+        <div class="sys-card" onclick="restartSystem()">
+          <div class="sys-icon" style="background:#fff1f2;color:#ef4444"><i class="fas fa-power-off"></i></div>
+          <div class="sys-title" data-i18n="sys_restart">重启系统</div>
+          <div class="sys-desc" data-i18n="sys_restart_desc">重启机器人、监听器和API</div>
+        </div>
+        <div class="sys-card" onclick="saveSettings()">
+          <div class="sys-icon" style="background:#f0fdf4;color:#10b981"><i class="fas fa-floppy-disk"></i></div>
+          <div class="sys-title" data-i18n="sys_save">保存所有设置</div>
+          <div class="sys-desc" data-i18n="sys_save_desc">立即应用所有更改</div>
+        </div>
+        <div class="sys-card" onclick="checkHealth()">
+          <div class="sys-icon" style="background:#f5f3ff;color:#8b5cf6"><i class="fas fa-heart-pulse"></i></div>
+          <div class="sys-title" data-i18n="sys_health">健康检查</div>
+          <div class="sys-desc" data-i18n="sys_health_desc">验证所有服务的状态</div>
+        </div>
+      </div>
+
+      <!-- Proxy Builder Card -->
+      <div class="cb mb4" id="proxy-builder-card">
+        <div class="cb-title">
+          <span class="icon-badge" style="background:#ecfeff;color:#06b6d4"><i class="fas fa-network-wired"></i></span>
+          <span data-i18n="proxy_builder_title">🌐 代理设置（协议号专用）</span>
+        </div>
+        <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:12px;padding:16px 20px;margin-bottom:20px">
+          <div style="font-size:13px;color:#0369a1;margin-bottom:6px"><i class="fas fa-circle-info me-1"></i><span data-i18n="proxy_info">协议号使用此代理连接 Telegram，支持 SOCKS5 / SOCKS4 / HTTP</span></div>
+          <div style="font-size:12px;color:#0369a1;opacity:.8" data-i18n="proxy_format">格式示例：socks5://用户名:密码@服务器地址:端口</div>
+        </div>
+        <div class="grid3" style="align-items:end">
+          <div class="fg">
+            <label><i class="fas fa-layer-group fa-xs me-1"></i><span data-i18n="proxy_type">类型</span></label>
+            <select id="prx-type" onchange="buildProxyUrl()">
+              <option value="socks5">SOCKS5 (推荐)</option>
+              <option value="socks4">SOCKS4</option>
+              <option value="http">HTTP</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label><i class="fas fa-server fa-xs me-1"></i><span data-i18n="proxy_host">服务器地址 (Host)</span></label>
+            <input id="prx-host" placeholder="例：1.2.3.4 或 proxy.example.com" oninput="buildProxyUrl()"/>
+          </div>
+          <div class="fg">
+            <label><i class="fas fa-plug fa-xs me-1"></i><span data-i18n="proxy_port">端口 (Port)</span></label>
+            <input id="prx-port" placeholder="例：1080" type="number" oninput="buildProxyUrl()"/>
+          </div>
+          <div class="fg">
+            <label><i class="fas fa-user fa-xs me-1"></i><span data-i18n="proxy_user">用户名（可选）</span></label>
+            <input id="prx-user" placeholder="留空表示无需认证" oninput="buildProxyUrl()"/>
+          </div>
+          <div class="fg">
+            <label><i class="fas fa-key fa-xs me-1"></i><span data-i18n="proxy_pass">密码（可选）</span></label>
+            <input id="prx-pass" type="password" placeholder="留空表示无需认证" oninput="buildProxyUrl()"/>
+          </div>
+          <div class="fg">
+            <label><i class="fas fa-link fa-xs me-1"></i><span data-i18n="proxy_preview">生成的代理地址</span></label>
+            <input id="prx-preview" readonly style="background:#f8fafc;color:var(--muted);font-family:monospace;font-size:12px" placeholder="填写以上字段后自动生成"/>
+          </div>
+        </div>
+        <div class="actions" style="margin-top:8px">
+          <button class="btn-pri" onclick="saveProxyUrl()"><i class="fas fa-save me-1"></i><span data-i18n="proxy_save">保存代理设置</span></button>
+          <button class="btn-ghost" onclick="clearProxyFields()"><i class="fas fa-times me-1"></i><span data-i18n="proxy_clear">清除代理</span></button>
+          <button class="btn-ghost" onclick="testProxy()" style="color:var(--info)"><i class="fas fa-vial me-1"></i><span data-i18n="proxy_test">测试连接</span></button>
+        </div>
+      </div>
+
+      <!-- Settings form -->
+      <div id="settings-groups" class="settings-grid"></div>
+
+      <div class="alert alert-warn mt10" id="settings-warning" style="display:none">
+        <i class="fas fa-triangle-exclamation"></i>
+        <span data-i18n="restart_warning">重启将导致约5-10秒的短暂中断。</span>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ══ MODAL: 编辑用户 ══ -->
+<div class="modal-overlay" id="adjust-modal">
+  <div class="modal-box">
+    <div class="modal-title" id="adj-title"><i class="fas fa-sliders text-pri me-2"></i>编辑</div>
+    <p class="muted mini mb3" id="adj-desc">输入数值（负数表示扣除）</p>
+    <input type="number" id="adj-val" placeholder="例如：30" style="margin-bottom:16px"/>
+    <div class="actions">
+      <button class="btn-pri" onclick="submitAdjust()"><span data-i18n="btn_confirm">确认</span></button>
+      <button class="btn-ghost" onclick="$('adjust-modal').classList.remove('show')" data-i18n="btn_cancel">取消</button>
+    </div>
+    <input type="hidden" id="adj-uid"/><input type="hidden" id="adj-type"/>
+  </div>
+</div>
+
+<!-- ══ MODAL: Login ══ -->
+<div class="modal-overlay" id="login-modal">
+  <div class="modal-box">
+    <div class="modal-title">
+      <span class="icon-badge ib-blue" style="width:34px;height:34px;border-radius:10px"><i class="fas fa-mobile-screen-button"></i></span>
+      <span data-i18n="login_modal_title">登录主号</span> — <span id="lm-name" class="text-pri"></span>
+    </div>
+    <div id="lm-step1">
+      <p class="muted mini" style="margin-bottom:14px"><span data-i18n="phone_label">手机号码：</span> <strong id="lm-phone" class="text-pri"></strong></p>
+      <button class="btn-pri" id="btn-send-code" onclick="sendLoginCode()" style="width:100%">
+        <i class="fas fa-paper-plane me-1"></i><span data-i18n="btn_send_code">发送验证码</span>
+      </button>
+    </div>
+    <div id="lm-step2" style="display:none">
+      <label class="muted mini mb2"><span data-i18n="enter_code">请输入验证码：</span></label>
+      <input id="lm-code" placeholder="12345" style="margin-bottom:12px"/>
+      <button class="btn-pri" onclick="submitLoginCode()" style="width:100%">
+        <i class="fas fa-check me-1"></i><span data-i18n="btn_verify">验证</span>
+      </button>
+    </div>
+    <div id="lm-step3" style="display:none">
+      <label class="muted mini mb2"><span data-i18n="enter_2fa">请输入两步验证密码：</span></label>
+      <input type="password" id="lm-pass" style="margin-bottom:12px"/>
+      <button class="btn-pri" onclick="submitLoginPassword()" style="width:100%">
+        <i class="fas fa-lock me-1"></i><span data-i18n="btn_confirm">确认</span>
+      </button>
+    </div>
+    <div id="lm-status" class="alert alert-info" style="margin-top:14px">
+      <i class="fas fa-circle-info"></i><span data-i18n="waiting">等待操作...</span>
+    </div>
+    <button class="btn-ghost btn-sm" onclick="closeLoginModal()" style="margin-top:10px">
+      <i class="fas fa-times me-1"></i><span data-i18n="btn_close">关闭</span>
+    </button>
+    <input type="hidden" id="lm-acc-id"/>
+  </div>
+</div>
+
+<!-- ══════ PROXY EDIT MODAL ══════ -->
+<div class="modal-overlay" id="proxy-edit-modal">
+  <div class="modal-box" style="max-width:500px">
+    <div class="modal-title">
+      <span class="icon-badge ib-purple" style="width:34px;height:34px;border-radius:10px"><i class="fas fa-shield-halved"></i></span>
+      <span data-i18n="proxy_modal_title">编辑账号代理</span>
+      <span id="pem-phone" class="text-pri" style="margin-left:8px;font-size:13px"></span>
+    </div>
+
+    <div class="alert alert-info" style="margin-bottom:14px;font-size:12.5px">
+      <i class="fas fa-circle-info" style="flex-shrink:0;margin-top:2px"></i>
+      <span data-i18n="proxy_modal_tip">每个号码需要使用不同 IP 的代理，以避免被封号。推荐使用 922S5 或 LunaProxy 等服务，为每个账号分配独立 IP。</span>
+    </div>
+
+    <div class="grid2" style="margin-bottom:10px">
+      <div class="fg">
+        <label><i class="fas fa-sitemap fa-xs me-1"></i><span data-i18n="lbl_proxy_type">类型</span></label>
+        <select id="pem-type">
+          <option value="socks5">SOCKS5</option>
+          <option value="socks4">SOCKS4</option>
+          <option value="http">HTTP</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label><i class="fas fa-server fa-xs me-1"></i><span data-i18n="lbl_proxy_host">服务器地址 / IP</span></label>
+        <input id="pem-host" placeholder="1.2.3.4"/>
+      </div>
+      <div class="fg">
+        <label><i class="fas fa-plug fa-xs me-1"></i><span data-i18n="lbl_proxy_port">端口</span></label>
+        <input id="pem-port" type="number" placeholder="1080"/>
+      </div>
+      <div class="fg">
+        <label><i class="fas fa-user fa-xs me-1"></i><span data-i18n="lbl_proxy_user">用户名</span></label>
+        <input id="pem-user" placeholder="（可选）"/>
+      </div>
+    </div>
+    <div class="fg" style="margin-bottom:12px">
+      <label><i class="fas fa-key fa-xs me-1"></i><span data-i18n="lbl_proxy_pass">密码</span></label>
+      <input id="pem-pass" type="password" placeholder="（可选）"/>
+    </div>
+
+    <div class="fg" style="margin-bottom:14px">
+      <label><i class="fas fa-link fa-xs me-1"></i><span data-i18n="lbl_proxy_url_preview">代理地址预览</span></label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="pem-url" placeholder="socks5://user:pass@host:port" style="font-family:monospace;font-size:12px" oninput="pemUrlChanged()"/>
+        <button class="btn-ghost btn-sm" onclick="pemBuild()" title="Build from fields"><i class="fas fa-magic"></i></button>
+        <button class="btn-ghost btn-sm" onclick="pemParse()" title="Parse URL to fields"><i class="fas fa-wrench"></i></button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn-pri" onclick="saveProtoProxy()" style="flex:1">
+        <i class="fas fa-save me-1"></i><span data-i18n="btn_save_proxy">保存代理</span>
+      </button>
+      <button class="btn-danger btn-sm" onclick="clearProtoProxy()" title="Remove proxy">
+        <i class="fas fa-trash-can"></i>
+      </button>
+      <button class="btn-ghost btn-sm" onclick="closeProxyModal()">
+        <i class="fas fa-times me-1"></i><span data-i18n="btn_close">关闭</span>
+      </button>
+    </div>
+    <input type="hidden" id="pem-acc-id"/>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ═══════════════════ CORE ═══════════════════
+const _tk = localStorage.getItem('admin_token');
+if (!_tk) { window.location.href = 'index.html'; }
+
+let _state = { users:[], accounts:[], plans:[], settings:[], currentSec:'dashboard', lang:'zh' };
+let _loginPoll = null, _refreshTimer = null;
+
+const $ = id => document.getElementById(id);
+const me = (el, html) => { if($(el)) $(el).innerHTML = html; };
+
+// ═══════════════════ i18n ═══════════════════
+const I18N = {
+  en: {
+    nav_group_main:'Operations', nav_group_users:'User Management', nav_group_accounts:'Account Management',
+    nav_group_listen:'Monitoring System', nav_group_other:'Other',
+    nav_dashboard:'Overview', nav_users:'Users', nav_orders:'Invoices & Orders',
+    nav_plans:'Premium Plans', nav_cards:'Code Cards', nav_accounts:'Main Accounts',
+    nav_protocols:'Protocol Accounts', nav_replies:'Auto Replies', nav_groups:'Monitored Groups',
+    nav_joinqueue:'Join Queue', nav_listendata:'Monitored Data', nav_chatlogs:'Chat Logs',
+    nav_lead:'Lead Software', nav_settings:'Settings', nav_notifications:'Notifications', nav_logout:'Logout',
+    page_dashboard:'Overview', sub_dashboard:'System statistics and recent activity',
+    page_users:'Users', sub_users:'Manage all registered users',
+    page_orders:'Invoices & Orders', sub_orders:'Review and activate recharge orders',
+    page_plans:'Premium Plans', sub_plans:'Setup membership plans and pricing',
+    page_cards:'Code Cards', sub_cards:'Generate and manage subscription codes',
+    page_accounts:'Main Accounts', sub_accounts:'Manage monitoring accounts and sessions',
+    page_protocols:'Protocol Accounts', sub_protocols:'Monitor and manage protocol accounts',
+    page_replies:'Auto Replies', sub_replies:'Setup keyword-based auto replies',
+    page_groups:'Monitored Groups', sub_groups:'Groups being monitored by the system',
+    page_joinqueue:'Join Queue', sub_joinqueue:'Automated group join tasks',
+    page_listendata:'Monitored Data', sub_listendata:'Users captured by monitoring',
+    page_chatlogs:'Chat Logs', sub_chatlogs:'Outbound and inbound message logs',
+    page_lead:'Lead Software', sub_lead:'Manage targeting tools and software',
+    page_settings:'General Settings', sub_settings:'Customize system data and payment methods',
+    stat_users:'Total Users', stat_accounts:'Main Accounts', stat_groups:'Groups',
+    stat_orders:'Pending Orders', stat_queue:'Join Queue', stat_keywords:'Keywords',
+    connected:'Connected & Active', offline:'Disconnected', ver_lbl:'Admin Panel',
+    no_data:'No data available', empty_orders:'No orders found',
+    btn_save:'Save', btn_cancel:'Cancel', btn_confirm:'Confirm', btn_close:'Close',
+    btn_add:'Add', btn_import:'Import', btn_export:'Export', btn_generate:'Generate',
+    btn_clean:'Delete Inactive', btn_clear_all:'Clear All', btn_clear_done:'Clear Done',
+    btn_clear_failed:'Clear Failed', btn_view_all:'View All', btn_verify:'Verify',
+    btn_send_code:'Send Verification Code', btn_save_session:'Save Session', btn_upload:'Upload File',
+    btn_add_to_queue:'Add to Queue', btn_save_reply:'Save Reply', btn_clear:'Clear',
+    sys_sync:'Sync Database', sys_sync_desc:'Create missing tables and columns',
+    sys_restart:'Restart System', sys_restart_desc:'Restart bot, listener and API',
+    sys_save:'Save All Settings', sys_save_desc:'Apply all changes immediately',
+    sys_health:'Health Check', sys_health_desc:'Verify status of all services',
+    restart_warning:'Restart will cause a brief interruption of 5-10 seconds.',
+    page_notifications:'Notifications', sub_notifications:'Bot user activity log',
+    sec_notifications:'Activity Notifications',
+    dash_realtime:'Live Monitor', dash_activity:'Recent User Activity',
+    rt_bot_status:'Bot Status', rt_active_users:'Active Users',
+    rt_pending_orders:'Pending Orders', rt_accounts:'Accounts / Online',
+    rt_groups:'Monitored Groups', rt_today_events:"Today's Events",
+    ev_user_start:'Bot Opened', ev_listen_on:'Listen ON', ev_listen_off:'Listen OFF',
+    ev_private_on:'Private ON', ev_private_off:'Private OFF',
+    ev_keyword_add:'Keyword Added', ev_order_created:'Order Created',
+    ev_other:'Other Activity', tz_label:'London Time (UTC)',
+    proxy_modal_title:'Edit Account Proxy',
+    proxy_modal_tip:'Each number needs a different IP proxy to avoid bans. Use services like 922S5 or LunaProxy and assign a unique IP to each account.',
+    add_proxy:'Add Proxy',
+    btn_save_proxy:'Save Proxy',
+    proxy_saved:'Proxy saved successfully',
+    proxy_cleared:'Proxy removed',
+    proxy_confirm_clear:'Remove proxy from this account?',
+    proxy_err_host:'Host and port are required',
+    proxy_err_empty:'Please enter or build a proxy URL first',
+    login_modal_title:'Login Account',
+    phone_label:'Phone Number:',
+    enter_code:'Enter verification code:',
+    enter_2fa:'Enter 2FA password:',
+    waiting:'Waiting for action...',
+    add_group:'Add Group Manually', sec_groups:'Monitored Groups',
+    lbl_main_acc:'Main Account', lbl_group_id:'Group ID', lbl_group_name:'Group Name', lbl_username:'Username (optional)',
+    th_main_acc:'Account', th_group_id:'Group ID', th_name:'Name', th_username:'Username', th_status:'Status', th_manage:'Actions',
+    status_active:'Active', status_blocked:'Blocked', status_stopped:'Stopped',
+    btn_fetch_groups:'Fetch Groups',
+    lbl_executor:'Executor Account',
+  },
+  zh: {
+    nav_group_main:'操作面板', nav_group_users:'用户管理', nav_group_accounts:'账号管理',
+    nav_group_listen:'监控系统', nav_group_other:'其他',
+    nav_dashboard:'概述', nav_users:'用户管理', nav_orders:'发票与订单',
+    nav_plans:'高级计划', nav_cards:'卡密管理', nav_accounts:'主号管理',
+    nav_protocols:'协议账户', nav_replies:'自动回复', nav_groups:'监听群配置',
+    nav_joinqueue:'批量加群', nav_listendata:'监听数据', nav_chatlogs:'私信日志',
+    nav_lead:'引流软件', nav_settings:'系统设置', nav_notifications:'通知中心', nav_logout:'退出登录',
+    page_dashboard:'概述', sub_dashboard:'系统统计信息和近期活动',
+    page_users:'用户管理', sub_users:'管理所有注册用户',
+    page_orders:'发票与订单', sub_orders:'审核并激活充值订单',
+    page_plans:'高级计划', sub_plans:'设置会员计划和定价',
+    page_cards:'卡密管理', sub_cards:'批量生成和管理卡密',
+    page_accounts:'主号管理', sub_accounts:'管理监控账号和会话',
+    page_protocols:'协议账户', sub_protocols:'监控和管理协议账户',
+    page_replies:'自动回复', sub_replies:'设置基于关键词的自动回复',
+    page_groups:'监听群配置', sub_groups:'系统正在监控的群组',
+    page_joinqueue:'批量加群', sub_joinqueue:'自动加入群组任务',
+    page_listendata:'监听数据', sub_listendata:'被监控捕获的用户',
+    page_chatlogs:'私信日志', sub_chatlogs:'发送和接收的消息记录',
+    page_lead:'引流软件', sub_lead:'管理引流工具和软件',
+    page_settings:'系统设置', sub_settings:'自定义系统数据和支付方式',
+    stat_users:'总用户数', stat_accounts:'主号数量', stat_groups:'群组数量',
+    stat_orders:'待处理订单', stat_queue:'加群队列', stat_keywords:'关键词数',
+    connected:'已连接 · 运行中', offline:'未连接', ver_lbl:'管理后台',
+    no_data:'暂无数据', empty_orders:'暂无订单',
+    btn_save:'保存', btn_cancel:'取消', btn_confirm:'确认', btn_close:'关闭',
+    btn_add:'添加', btn_import:'导入', btn_export:'导出', btn_generate:'生成',
+    btn_clean:'清除异常', btn_clear_all:'清空', btn_clear_done:'清除已完成',
+    btn_clear_failed:'清除失败', btn_view_all:'查看全部', btn_verify:'验证',
+    btn_send_code:'发送验证码', btn_save_session:'保存Session', btn_upload:'上传文件',
+    btn_add_to_queue:'加入队列', btn_save_reply:'保存回复', btn_clear:'清空',
+    sys_sync:'同步数据库', sys_sync_desc:'创建缺失的表和字段',
+    sys_restart:'重启系统', sys_restart_desc:'重启机器人、监听器和API',
+    sys_save:'保存所有设置', sys_save_desc:'立即应用所有更改',
+    sys_health:'健康检查', sys_health_desc:'验证所有服务的状态',
+    restart_warning:'重启将导致约5-10秒的短暂中断。',
+    page_notifications:'通知中心', sub_notifications:'机器人用户活动记录',
+    sec_notifications:'活动通知',
+    dash_realtime:'实时监控', dash_activity:'用户最新动态',
+    rt_bot_status:'机器人状态', rt_active_users:'活跃用户',
+    rt_pending_orders:'待处理订单', rt_accounts:'主号 / 在线',
+    rt_groups:'监控群组', rt_today_events:'今日事件',
+    ev_user_start:'打开机器人', ev_listen_on:'开启监听', ev_listen_off:'关闭监听',
+    ev_private_on:'开启私聊', ev_private_off:'关闭私聊',
+    ev_keyword_add:'添加关键词', ev_order_created:'创建充值订单',
+    ev_other:'其他操作', tz_label:'北京时间 (UTC+8)',
+    proxy_modal_title:'编辑账号代理',
+    proxy_modal_tip:'每个号码需要使用不同 IP 的代理，以避免被封号。推荐使用 922S5 或 LunaProxy 等服务，为每个账号分配独立 IP。',
+    add_proxy:'添加代理',
+    btn_save_proxy:'保存代理',
+    proxy_saved:'代理保存成功',
+    proxy_cleared:'代理已清除',
+    proxy_confirm_clear:'确认移除此账号的代理？',
+    proxy_err_host:'主机和端口不能为空',
+    proxy_err_empty:'请先输入或构建代理 URL',
+    login_modal_title:'登录主号',
+    phone_label:'手机号码：',
+    enter_code:'请输入验证码：',
+    enter_2fa:'请输入两步验证密码：',
+    waiting:'等待操作...',
+    add_group:'手动添加群组', sec_groups:'安全组',
+    lbl_main_acc:'主号', lbl_group_id:'群组ID', lbl_group_name:'群组名称', lbl_username:'用户名（可选）',
+    th_main_acc:'主号', th_group_id:'群组ID', th_name:'名称', th_username:'用户名', th_status:'状态', th_manage:'操作',
+    status_active:'活动', status_blocked:'已限止', status_stopped:'已停止',
+    btn_fetch_groups:'获取群组',
+    lbl_executor:'执行账号',
+    add_account:'添加主号',
+    add_join_task:'添加加群任务',
+    add_lead:'添加引流程序',
+    add_plan:'添加计划',
+    add_reply:'添加回复',
+    dash_recent:'最新充值订单',
+    gen_cards:'生成卡密',
+    import_protocols:'导入协议账号',
+    join_notice:'将在指定延迟后自动加入，以绕过限制。',
+    lbl_acc_name:'账号名称',
+    lbl_count:'数量',
+    lbl_days:'天数',
+    lbl_desc:'描述',
+    lbl_group:'群组',
+    lbl_group_links:'群组链接（每行一条）',
+    lbl_keyword:'关键词',
+    lbl_kw_limit:'关键词限制',
+    lbl_max_delay:'最大延迟（秒）',
+    lbl_min_delay:'最小延迟（秒）',
+    lbl_name:'名称',
+    lbl_owner:'所属用户',
+    lbl_package_file:'包文件 (.zip)',
+    lbl_phone:'手机号',
+    lbl_prefix:'前缀（可选）',
+    lbl_preview:'预览',
+    lbl_price:'价格 (U)',
+    lbl_proxy:'代理（可选）',
+    lbl_proxy_host:'服务器地址 / IP',
+    lbl_proxy_pass:'密码',
+    lbl_proxy_port:'端口',
+    lbl_proxy_type:'类型',
+    lbl_proxy_url_preview:'代理地址预览',
+    lbl_proxy_user:'用户名',
+    lbl_remark:'备注',
+    lbl_reply_content:'回复内容',
+    lbl_select_plan:'选择计划',
+    lbl_sort:'排序',
+    lbl_title:'名称',
+    lbl_url:'链接（可选）',
+    lbl_user:'用户',
+    preview_placeholder:'输入内容以查看预览...',
+    proxy_builder_title:'🌐 代理设置（协议号专用）',
+    proxy_clear:'清除代理',
+    proxy_format:'格式示例：socks5://用户名:密码@服务器地址:端口',
+    proxy_host:'服务器地址 (Host)',
+    proxy_info:'协议号使用此代理连接 Telegram，支持 SOCKS5 / SOCKS4 / HTTP',
+    proxy_pass:'密码（可选）',
+    proxy_port:'端口 (Port)',
+    proxy_preview:'生成的代理地址',
+    proxy_save:'保存代理设置',
+    proxy_test:'测试连接',
+    proxy_type:'类型',
+    proxy_user:'用户名（可选）',
+    queue_status:'队列状态',
+    sec_accounts:'主号列表',
+    sec_cards:'卡密列表',
+    sec_chatlogs:'私信记录',
+    sec_lead:'引流程序',
+    sec_listendata:'监听数据',
+    sec_orders:'发票与订单',
+    sec_plans:'高级计划',
+    sec_protocols:'协议账号',
+    sec_replies:'自动回复',
+    sec_users:'用户管理',
+    session_paste:'粘贴 Session 文本',
+    session_upload:'上传 Session 文件 (.txt / .zip)',
+    th_account:'账号',
+    th_action:'操作',
+    th_amount:'金额',
+    th_balance:'余额',
+    th_code:'卡密',
+    th_content:'内容',
+    th_date:'日期',
+    th_days:'天数',
+    th_delay:'延迟',
+    th_desc:'描述',
+    th_exec_time:'执行时间',
+    th_expiry:'到期',
+    th_group:'群组',
+    th_keyword:'关键词',
+    th_kw_limit:'关键词限制',
+    th_link:'链接',
+    th_listen:'监听',
+    th_login_status:'登录状态',
+    th_message:'消息',
+    th_nickname:'昵称',
+    th_note:'备注',
+    th_online:'在线',
+    th_order_no:'订单号',
+    th_outbound:'外发',
+    th_owner:'所属',
+    th_phone:'手机号',
+    th_plan:'套餐',
+    th_price:'价格 (U)',
+    th_proxy:'代理',
+    th_sort:'排序',
+    th_source_group:'源群组',
+    th_type:'类型',
+    th_used_at:'使用时间',
+    th_user:'用户',
+    update_session:'更新 Session',
+  }
+};
+
+function t(key) { return I18N[_state.lang]?.[key] || I18N.zh[key] || key; }
+
+function setLang(lang) {
+  _state.lang = lang;
+  document.documentElement.setAttribute('data-lang', lang);
+  document.documentElement.setAttribute('lang', lang);
+  document.documentElement.setAttribute('dir', 'ltr');
+  ['btn-zh','btn-en'].forEach(id => $(id)?.classList.remove('active'));
+  $('btn-'+lang)?.classList.add('active');
+  localStorage.setItem('admin_lang', lang);
+  // Update i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const v = t(el.dataset.i18n); if(v) el.textContent = v;
+  });
+  // Update sidebar status
+  $('sb-status-lbl').textContent = t('connected');
+  $('sb-ver-lbl').textContent = t('ver_lbl');
+  // Update page title
+  showSec(_state.currentSec, false);
+  // Update sys cards
+  buildSysCards();
+}
+
+// ═══════════════════ LIVE CLOCK (timezone-linked to language) ═══════════════════
+const TZ_MAP = { zh: 'Asia/Shanghai', en: 'Europe/London' };
+const LOCALE_MAP = { zh: 'zh-CN', en: 'en-GB' };
+
+function updateClock() {
+  const el = $('live-clock');
+  if (!el) return;
+  const lang = _state.lang || 'zh';
+  const tz = TZ_MAP[lang] || 'Asia/Shanghai';
+  const locale = LOCALE_MAP[lang] || 'zh-CN';
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString(locale, { hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false, timeZone: tz });
+  const tzLabel = t('tz_label') || tz;
+  el.innerHTML = `<span style="font-size:14px;font-variant-numeric:tabular-nums">${timeStr}</span><span style="font-size:10px;color:var(--muted);margin-right:4px;margin-left:4px"> ${tzLabel}</span>`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ═══════════════════ HEALTH CHECK ═══════════════════
+let _lastPing = Date.now();
+async function checkHealth() {
+  try {
+    const start = Date.now();
+    const r = await fetch('/api/health', { headers: { Authorization: 'Bearer ' + _tk } });
+    const ms = Date.now() - start;
+    const data = await r.json().catch(() => ({}));
+    _lastPing = Date.now();
+    $('conn-badge')?.classList.remove('offline');
+    $('conn-lbl').textContent = t('connected') + ' · ' + ms + 'ms';
+    $('sb-dot')?.classList.remove('danger');
+    $('sb-status-lbl').textContent = t('connected');
+    toast(`✅ ${data.message||'System OK'} (${ms}ms)`, 'ok');
+  } catch(e) {
+    $('conn-badge')?.classList.add('offline');
+    $('conn-lbl').textContent = t('offline');
+    $('sb-dot')?.classList.add('danger');
+    $('sb-status-lbl').textContent = t('offline');
+  }
+}
+
+// Auto refresh realtime every 15s
+setInterval(() => {
+  if (_state.currentSec === 'dashboard') loadRealtime();
+  else if (_state.currentSec === 'notifications') loadNotifications();
+  else loadRealtime(); // always refresh badge in background
+}, 15000);
+
+// Ping every 30s
+async function silentPing() {
+  try {
+    await fetch('/api/health');
+    _lastPing = Date.now();
+    $('conn-badge')?.classList.remove('offline');
+    $('conn-lbl').textContent = t('connected');
+    $('sb-dot')?.classList.remove('danger');
+  } catch(e) {
+    $('conn-badge')?.classList.add('offline');
+    $('conn-lbl').textContent = t('offline');
+    $('sb-dot')?.classList.add('danger');
+  }
+}
+setInterval(silentPing, 30000);
+
+// Auto refresh dashboard every 45s
+setInterval(() => { if (_state.currentSec === 'dashboard') loadDashboard(); }, 45000);
+
+// ═══════════════════ API ═══════════════════
+async function api(url, opts={}) {
+  const headers = { Authorization: 'Bearer ' + _tk, ...opts.headers };
+  if (!(opts.body instanceof FormData)) headers['Content-Type'] = 'application/json';
+  const r = await fetch(url, { ...opts, headers });
+  if (r.status === 401) { logout(); throw new Error('Session expired'); }
+  if (opts._raw) return r;
+  const data = await r.json().catch(() => ({}));
+  if (data.code !== 0) throw new Error(data.message || 'Request failed');
+  return data.data;
+}
+
+// ═══════════════════ TOAST ═══════════════════
+function toast(msg, type='ok') {
+  const c = $('toast-container'); if(!c) return;
+  const el = document.createElement('div');
+  el.className = 'toast-item toast-' + (type==='ok'?'ok':type==='err'?'err':'info');
+  el.textContent = msg;
+  c.appendChild(el);
+  setTimeout(() => el.remove(), 3100);
+}
+
+// ═══════════════════ NAV ═══════════════════
+document.querySelectorAll('.nav-link[data-sec]').forEach(a => {
+  a.addEventListener('click', e => { e.preventDefault(); showSec(a.dataset.sec); });
+});
+
+const SEC_META = (l) => ({
+  dashboard:     { title: I18N[l]?.page_dashboard||'Overview', sub: I18N[l]?.sub_dashboard||'' },
+  users:         { title: I18N[l]?.page_users||'Users', sub: I18N[l]?.sub_users||'' },
+  orders:        { title: I18N[l]?.page_orders||'Orders', sub: I18N[l]?.sub_orders||'' },
+  plans:         { title: I18N[l]?.page_plans||'Plans', sub: I18N[l]?.sub_plans||'' },
+  cards:         { title: I18N[l]?.page_cards||'Cards', sub: I18N[l]?.sub_cards||'' },
+  accounts:      { title: I18N[l]?.page_accounts||'Accounts', sub: I18N[l]?.sub_accounts||'' },
+  protocols:     { title: I18N[l]?.page_protocols||'Protocols', sub: I18N[l]?.sub_protocols||'' },
+  replies:       { title: I18N[l]?.page_replies||'Replies', sub: I18N[l]?.sub_replies||'' },
+  groups:        { title: I18N[l]?.page_groups||'Groups', sub: I18N[l]?.sub_groups||'' },
+  joinqueue:     { title: I18N[l]?.page_joinqueue||'Join Queue', sub: I18N[l]?.sub_joinqueue||'' },
+  listendata:    { title: I18N[l]?.page_listendata||'Monitored', sub: I18N[l]?.sub_listendata||'' },
+  chatlogs:      { title: I18N[l]?.page_chatlogs||'Chat Logs', sub: I18N[l]?.sub_chatlogs||'' },
+  lead:          { title: I18N[l]?.page_lead||'Lead', sub: I18N[l]?.sub_lead||'' },
+  settings:      { title: I18N[l]?.page_settings||'Settings', sub: I18N[l]?.sub_settings||'' },
+  notifications: { title: I18N[l]?.page_notifications||'Notifications', sub: I18N[l]?.sub_notifications||'' },
+});
+
+const SEC_LOADERS = {
+  dashboard:loadDashboard, users:loadUsers, orders:loadOrders, plans:loadPlans,
+  cards:loadCards, accounts:loadAccounts, protocols:loadProtocols, replies:loadReplies,
+  groups:loadGroups, joinqueue:loadJoinQueue, listendata:loadListened,
+  chatlogs:loadChatLogs, lead:loadLead, settings:loadSettings,
+  notifications:loadNotifications,
+};
+
+function showSec(id, load=true) {
+  _state.currentSec = id;
+  document.querySelectorAll('.sec').forEach(s => s.classList.toggle('active', s.id === 'sec-'+id));
+  document.querySelectorAll('.nav-link[data-sec]').forEach(a => a.classList.toggle('active', a.dataset.sec===id));
+  const m = SEC_META(_state.lang)[id] || {};
+  if($('page-title')) $('page-title').textContent = m.title || '';
+  if($('page-sub')) $('page-sub').textContent = m.sub || '';
+  if(load && SEC_LOADERS[id]) SEC_LOADERS[id]();
+}
+function refreshCurrent() { if(SEC_LOADERS[_state.currentSec]) SEC_LOADERS[_state.currentSec](); }
+function logout() { localStorage.removeItem('admin_token'); window.location.href = 'index.html'; }
+
+// ═══════════════════ UTILS ═══════════════════
+function esc(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmt(v) {
+  if(!v) return '—';
+  try {
+    const lang = _state.lang || 'zh';
+    const tz = TZ_MAP[lang] || 'Asia/Shanghai';
+    const locale = LOCALE_MAP[lang] || 'zh-CN';
+    return new Date(v+'Z').toLocaleString(locale, {hour12:false, timeZone: tz});
+  } catch{ return v; }
+}
+function money(v) { const n=Number(v); return Number.isFinite(n)?n.toFixed(3).replace(/\.?0+$/,''):String(v??'0'); }
+function fmtDays(v) {
+  if(!v) return `<span class="badge bg-gray">—</span>`;
+  const d = Math.ceil((new Date(v)-Date.now())/86400000);
+  return d > 0 ? `<span class="badge bg-ok">✅ ${d}d</span>` : `<span class="badge bg-fail">❌ Exp</span>`;
+}
+function emptyRow(cols, msg) { return `<tr><td colspan="${cols}" style="text-align:center;color:var(--muted);padding:28px">${msg||t('no_data')}</td></tr>`; }
+function populateSel(id, items, fn, empty='—') {
+  const el=$(id); if(!el) return;
+  el.innerHTML = `<option value="">${empty}</option>` + items.map(i=>{ const m=fn(i); return `<option value="${esc(String(m.v))}">${esc(m.t)}</option>`; }).join('');
+}
+function updateAccSels(accs) {
+  ['group-acc-id','join-acc-id'].forEach(id => populateSel(id, accs, a=>({v:a.id, t:`${a.name} (${a.phone})`})));
+}
+
+// Animated counter
+function animateCount(el, target) {
+  if(!el) return;
+  const start = parseInt(el.textContent)||0;
+  const diff = target - start;
+  if(diff === 0) return;
+  const steps = 20, stepTime = 600/steps;
+  let i = 0;
+  const timer = setInterval(() => {
+    i++;
+    el.textContent = Math.round(start + (diff * i/steps));
+    if(i >= steps) { el.textContent = target; clearInterval(timer); }
+  }, stepTime);
+}
+
+// ═══════════════════ DASHBOARD ═══════════════════
+async function loadDashboard() {
+  try {
+    const d = await api('/api/admin/dashboard');
+    const defs = [
+      { k:'users',          label:t('stat_users'),    icon:'fa-users',                 cls:'si-blue' },
+      { k:'main_accounts',  label:t('stat_accounts'), icon:'fa-mobile-screen-button',  cls:'si-cyan' },
+      { k:'monitored_groups', label:t('stat_groups'), icon:'fa-tower-broadcast',       cls:'si-green' },
+      { k:'pending_orders', label:t('stat_orders'),   icon:'fa-file-invoice-dollar',   cls:'si-yellow' },
+      { k:'join_queue',     label:t('stat_queue'),    icon:'fa-rocket',                cls:'si-purple' },
+      { k:'keywords',       label:t('stat_keywords'), icon:'fa-magnifying-glass',      cls:'si-red' },
+    ];
+    const secMap = { users:'users', main_accounts:'accounts', monitored_groups:'groups', pending_orders:'orders', join_queue:'joinqueue', keywords:'users' };
+    $('stats-grid').innerHTML = defs.map(x => `
+      <div class="stat-card" onclick="showSec('${secMap[x.k]||'dashboard'}')">
+        <div class="si ${x.cls}"><i class="fas ${x.icon}"></i></div>
+        <div>
+          <div class="sn" id="stat-${x.k}">${d[x.k]??0}</div>
+          <div class="sl">${x.label}</div>
+        </div>
+      </div>`).join('');
+    // Animate counters
+    defs.forEach(x => animateCount($(`stat-${x.k}`), parseInt(d[x.k])||0));
+    // Recent orders
+    const orders = await api('/api/admin/orders');
+    me('dash-orders-tbody', (orders||[]).slice(0,6).map(o => `
+      <tr>
+        <td class="fw800 text-pri">${esc(o.order_no||'')}</td>
+        <td>${o.username ? '@'+esc(o.username) : '<span class="muted">—</span>'}</td>
+        <td class="fw800">${money(o.amount)} USDT</td>
+        <td>${o.status==='paid'?'<span class="badge bg-ok">✅ Done</span>':'<span class="badge bg-warn">⏳ Pending</span>'}</td>
+        <td>${o.status==='pending'?`<button class="btn-pri btn-xs" onclick="confirmOrder(${o.id})">✅</button>`:'<i class="fas fa-check-circle text-ok"></i>'}</td>
+      </tr>`).join('') || emptyRow(5, t('empty_orders')));
+    // Load realtime and recent events
+    loadRealtime();
+  } catch(e) { me('stats-grid', `<div class="alert alert-err col-span-6">${esc(e.message)}</div>`); }
+}
+
+// ═══════════════════ REALTIME MONITOR ═══════════════════
+const EV_META = {
+  user_start:  { icon:'fa-door-open', cls:'ev-start', key:'ev_user_start' },
+  listen_on:   { icon:'fa-satellite-dish', cls:'ev-listen', key:'ev_listen_on' },
+  listen_off:  { icon:'fa-satellite-dish', cls:'ev-listen', key:'ev_listen_off' },
+  private_on:  { icon:'fa-comments', cls:'ev-private', key:'ev_private_on' },
+  private_off: { icon:'fa-comments', cls:'ev-private', key:'ev_private_off' },
+  keyword_add: { icon:'fa-magnifying-glass', cls:'ev-keyword', key:'ev_keyword_add' },
+  order_created:{ icon:'fa-credit-card', cls:'ev-order', key:'ev_order_created' },
+};
+
+function evMeta(type) { return EV_META[type] || { icon:'fa-circle-dot', cls:'ev-other', key:'ev_other' }; }
+
+function fmtEvent(ev, isNew=false) {
+  const m = evMeta(ev.event_type);
+  const userStr = ev.username ? `@${esc(ev.username)}` : (ev.telegram_id ? `<code>${esc(String(ev.telegram_id))}</code>` : '—');
+  const timeAgo = fmtAgo(ev.created_at);
+  return `<li class="activity-item${isNew?' act-new':''}">
+    <div class="act-icon ${m.cls}"><i class="fas ${m.icon}"></i></div>
+    <div class="act-body">
+      <div class="act-type">${t(m.key)}</div>
+      <div class="act-user">${userStr}</div>
+      ${ev.detail?`<div class="act-detail">${esc(ev.detail)}</div>`:''}
+    </div>
+    <div class="act-time">${timeAgo}</div>
+  </li>`;
+}
+
+function fmtAgo(isoStr) {
+  if (!isoStr) return '—';
+  const diff = (Date.now() - new Date(isoStr+'Z').getTime()) / 1000;
+  if (diff < 60) return `${Math.round(diff)}s`;
+  if (diff < 3600) return `${Math.round(diff/60)}m`;
+  if (diff < 86400) return `${Math.round(diff/3600)}h`;
+  return `${Math.round(diff/86400)}d`;
+}
+
+let _lastEventId = 0;
+
+async function loadRealtime() {
+  try {
+    const d = await api('/api/admin/realtime');
+    // Update monitor cards
+    const statusHtml = d.status==='online'
+      ? '<span class="rt-status rt-ok"><i class="fas fa-circle"></i> Online</span>'
+      : '<span class="rt-status rt-err"><i class="fas fa-circle"></i> Offline</span>';
+    if($('rt-bot')) $('rt-bot').innerHTML = statusHtml;
+    if($('rt-active')) $('rt-active').textContent = d.active_users??0;
+    if($('rt-pending')) $('rt-pending').textContent = d.pending_orders??0;
+    if($('rt-accounts')) $('rt-accounts').textContent = `${d.main_accounts??0} / ${d.online_accounts??0}`;
+    if($('rt-groups')) $('rt-groups').textContent = d.monitored_groups??0;
+    if($('rt-events')) $('rt-events').textContent = d.today_events??0;
+    if($('rt-last-update')) {
+      const now = new Date();
+      $('rt-last-update').textContent = now.toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+    }
+    // Update badge
+    const unreadCount = d.recent_events?.length ?? 0;
+    updateNotifBadge(d.today_events??0);
+    // Recent activity feed
+    if (d.recent_events?.length) {
+      const newIds = d.recent_events.map(e=>e.id);
+      me('dash-activity-list', d.recent_events.map(ev => fmtEvent(ev, ev.id > _lastEventId)).join(''));
+      _lastEventId = Math.max(...newIds, _lastEventId);
+    } else {
+      me('dash-activity-list', `<li style="padding:24px;text-align:center;color:var(--muted)">${t('no_data')}</li>`);
+    }
+  } catch(e) {}
+}
+
+function updateNotifBadge(count) {
+  const badge = $('notif-badge');
+  const dot = $('nav-notif-dot');
+  if (count > 0) {
+    if(badge) { badge.textContent = count > 99 ? '99+' : count; badge.style.display='block'; }
+    if(dot) dot.style.display='block';
+  } else {
+    if(badge) badge.style.display='none';
+    if(dot) dot.style.display='none';
+  }
+}
+
+let _notifFilter = '';
+function filterNotif(btn, filterType) {
+  _notifFilter = filterType;
+  document.querySelectorAll('#notif-filter-bar .filter-btn').forEach(b => b.classList.toggle('active', b===btn));
+  loadNotifications();
+}
+
+async function loadNotifications() {
+  try {
+    const url = '/api/admin/bot-events?limit=100' + (_notifFilter ? '&event_type='+_notifFilter : '');
+    const d = await api(url);
+    updateNotifBadge(d.unread??0);
+    if (!d.events?.length) {
+      me('notif-list', `<li style="padding:60px;text-align:center;color:var(--muted)"><i class="fas fa-bell-slash" style="font-size:32px;display:block;margin-bottom:12px;opacity:.3"></i>${t('no_data')}</li>`);
+      return;
+    }
+    me('notif-list', d.events.map((ev, i) => fmtEvent(ev, i < (d.unread??0))).join(''));
+  } catch(e) { me('notif-list', `<li class="activity-item"><div style="color:var(--danger);padding:20px">${esc(e.message)}</div></li>`); }
+}
+
+// ═══════════════════ PROXY BUILDER ═══════════════════
+function buildProxyUrl() {
+  const type = $('prx-type')?.value || 'socks5';
+  const host = $('prx-host')?.value.trim() || '';
+  const port = $('prx-port')?.value.trim() || '';
+  const user = $('prx-user')?.value.trim() || '';
+  const pass = $('prx-pass')?.value.trim() || '';
+  if (!host || !port) { if($('prx-preview')) $('prx-preview').value = ''; return; }
+  let url = type + '://';
+  if (user && pass) url += encodeURIComponent(user) + ':' + encodeURIComponent(pass) + '@';
+  else if (user) url += encodeURIComponent(user) + '@';
+  url += host + ':' + port;
+  if ($('prx-preview')) $('prx-preview').value = url;
+}
+
+function loadProxyToFields(url) {
+  if (!url) return;
+  try {
+    const parsed = new URL(url.includes('://') ? url : 'socks5://' + url);
+    if ($('prx-type')) $('prx-type').value = parsed.protocol.replace(':','');
+    if ($('prx-host')) $('prx-host').value = parsed.hostname;
+    if ($('prx-port')) $('prx-port').value = parsed.port;
+    if ($('prx-user')) $('prx-user').value = decodeURIComponent(parsed.username || '');
+    if ($('prx-pass')) $('prx-pass').value = decodeURIComponent(parsed.password || '');
+    if ($('prx-preview')) $('prx-preview').value = url;
+  } catch(e) { if($('prx-preview')) $('prx-preview').value = url; }
+}
+
+async function saveProxyUrl() {
+  buildProxyUrl();
+  const url = $('prx-preview')?.value.trim() || '';
+  try {
+    await api('/api/admin/system-settings', { method:'POST', body: JSON.stringify([{setting_key:'protocol_proxy_url', setting_value: url}]) });
+    toast(url ? ('✅ ' + (t('proxy_saved') || '代理已保存')) : ('✅ ' + (t('proxy_cleared') || '代理已清除')), 'ok');
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+function clearProxyFields() {
+  ['prx-host','prx-port','prx-user','prx-pass','prx-preview'].forEach(id => { if($(id)) $(id).value=''; });
+  if($('prx-type')) $('prx-type').value = 'socks5';
+}
+
+async function testProxy() {
+  buildProxyUrl();
+  const url = $('prx-preview')?.value.trim();
+  if (!url) { toast(t('proxy_empty') || '请先填写代理信息', 'err'); return; }
+  toast('⏳ ' + (t('proxy_testing') || '测试中...'));
+  try {
+    const r = await api('/api/admin/system/health');
+    toast('✅ ' + (t('proxy_test_ok') || '代理配置格式正确，已保存到系统'), 'ok');
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+async function clearEvents() {
+  if(!confirm(t('btn_clear_all') + '?')) return;
+  try {
+    await api('/api/admin/bot-events', {method:'DELETE'});
+    toast('✅ ' + t('btn_clear'), 'ok');
+    loadNotifications();
+    updateNotifBadge(0);
+  } catch(e) { toast(e.message,'err'); }
+}
+
+// ═══════════════════ USERS ═══════════════════
+async function loadUsers() {
+  try {
+    const rows = await api('/api/admin/users'); _state.users=rows;
+    populateSel('reply-user-id', rows, u=>({v:u.id, t:u.username?'@'+u.username:u.nickname||String(u.id)}));
+    populateSel('prot-user-id', rows, u=>({v:u.id, t:u.username?'@'+u.username:u.nickname||String(u.id)}));
+    me('users-tbody', rows.length ? rows.map(u => `
+      <tr>
+        <td>${u.id}</td><td class="fw800 text-pri">${esc(u.telegram_id||'')}</td>
+        <td>${u.username?'@'+esc(u.username):(esc(u.nickname||'—'))}</td>
+        <td>${u.plan_name?`<span class="badge bg-info">${esc(u.plan_name)}</span>`:'<span class="muted">—</span>'}</td>
+        <td>${u.plan_keyword_limit??0}</td>
+        <td class="fw800 text-ok">${money(u.balance||0)} U</td>
+        <td>${fmtDays(u.expire_at)}</td>
+        <td>${u.listen_status?'<span class="badge bg-ok">🟢</span>':'<span class="badge bg-gray">⚫</span>'}</td>
+        <td><div class="actions">
+          <button class="btn-${u.listen_status?'danger':'ok'} btn-xs" onclick="setListen(${u.id},${u.listen_status?0:1})">${u.listen_status?'Off':'On'}</button>
+          <button class="btn-ghost btn-xs" onclick="openAdj(${u.id},'days')">+Days</button>
+          <button class="btn-ghost btn-xs" onclick="openAdj(${u.id},'balance')">+Bal</button>
+        </div></td>
+      </tr>`).join('') : emptyRow(9));
+  } catch(e) { me('users-tbody', emptyRow(9, esc(e.message))); }
+}
+async function setListen(id,s){try{await api('/api/admin/users/'+id+'/listen-status',{method:'PUT',body:JSON.stringify({listen_status:s})});loadUsers();}catch(e){toast(e.message,'err');}}
+function openAdj(id,type){
+  $('adj-uid').value=id; $('adj-type').value=type; $('adj-val').value='';
+  $('adj-title').innerHTML = `<i class="fas fa-${type==='days'?'calendar':'coins'} text-pri me-2"></i>${type==='days'?'编辑天数':'编辑余额'}`;
+  $('adj-desc').textContent = type==='days'?'输入天数（负数表示扣除）':'输入余额金额（负数表示扣除）';
+  $('adjust-modal').classList.add('show');
+}
+async function submitAdjust(){
+  const id=$('adj-uid').value, type=$('adj-type').value, val=Number($('adj-val').value);
+  if(isNaN(val)){toast('请输入正确数值','err');return;}
+  try{
+    if(type==='days') await api('/api/admin/users/'+id+'/adjust-days',{method:'POST',body:JSON.stringify({days:val})});
+    else await api('/api/admin/users/'+id+'/adjust-balance',{method:'POST',body:JSON.stringify({amount:val})});
+    $('adjust-modal').classList.remove('show'); toast('✅ '+t('btn_confirm')); loadUsers();
+  }catch(e){toast(e.message,'err');}
+}
+
+// ═══════════════════ ORDERS ═══════════════════
+async function loadOrders(){
+  try{
+    const rows=await api('/api/admin/orders');
+    me('orders-tbody', rows.length ? rows.map(o=>`
+      <tr>
+        <td class="fw800 text-pri">${esc(o.order_no||'')}</td>
+        <td>${o.username?'@'+esc(o.username):'—'}</td>
+        <td>${esc(o.plan_name||'—')}</td>
+        <td class="fw800">${money(o.amount)} U</td>
+        <td>${o.status==='paid'?'<span class="badge bg-ok">✅</span>':'<span class="badge bg-warn">⏳</span>'}</td>
+        <td class="mini muted">${fmt(o.created_at)}</td>
+        <td>${o.status==='paid'?'—':`<button class="btn-pri btn-xs" onclick="confirmOrder(${o.id})">✅ Confirm</button>`}</td>
+      </tr>`).join('') : emptyRow(7));
+  }catch(e){me('orders-tbody',emptyRow(7,esc(e.message)));}
+}
+async function confirmOrder(id){try{await api('/api/admin/orders/'+id+'/confirm',{method:'POST'});toast('✅ Activated');loadOrders();loadDashboard();}catch(e){toast(e.message,'err');}}
+
+// ═══════════════════ PLANS ═══════════════════
+async function loadPlans(){
+  try{
+    const rows=await api('/api/admin/plans'); _state.plans=rows;
+    populateSel('card-plan-id', rows, p=>({v:p.id, t:`${p.plan_group}—${p.name} (${p.price}U/${p.duration_days}d)`}));
+    me('plans-tbody', rows.length ? rows.map(p=>`
+      <tr>
+        <td>${esc(p.plan_group||'')}</td><td class="fw800">${esc(p.name)}</td>
+        <td>${p.duration_days?p.duration_days+'d':'∞'}</td><td>${p.keyword_limit??0}</td>
+        <td class="fw800 text-pri">${money(p.price)} U</td>
+        <td><div class="actions">
+          <button class="btn-ghost btn-xs" onclick='fillPlan(${JSON.stringify(p).replace(/'/g,"&#39;")})'>✏️</button>
+          <button class="btn-danger btn-xs" onclick="delPlan(${p.id})">🗑️</button>
+        </div></td>
+      </tr>`).join('') : emptyRow(6));
+  }catch(e){}
+}
+function fillPlan(p){$('plan-id').value=p.id;$('plan-group').value=p.plan_group;$('plan-name').value=p.name;$('plan-days').value=p.duration_days;$('plan-limit').value=p.keyword_limit;$('plan-price').value=p.price;$('plan-sort').value=p.sort_no;$('plan-form-title').textContent='✏️ 编辑计划';}
+function resetPlanForm(){['plan-id','plan-group','plan-name','plan-days','plan-limit','plan-price','plan-sort'].forEach(k=>$(k)&&($(k).value=''));if($('plan-form-title'))$('plan-form-title').dataset.i18n='add_plan',$('plan-form-title').textContent=t('add_plan');}
+async function savePlan(){
+  const id=$('plan-id').value;
+  const body={plan_group:$('plan-group').value||'General',name:$('plan-name').value,duration_days:parseInt($('plan-days').value)||30,keyword_limit:parseInt($('plan-limit').value)||0,price:parseFloat($('plan-price').value)||0,sort_no:parseInt($('plan-sort').value)||0,status:1};
+  if(!body.name){toast('Name required','err');return;}
+  try{if(id)await api('/api/admin/plans/'+id,{method:'PUT',body:JSON.stringify(body)});else await api('/api/admin/plans',{method:'POST',body:JSON.stringify(body)});toast('✅ Saved');resetPlanForm();loadPlans();}catch(e){toast(e.message,'err');}
+}
+async function delPlan(id){if(!confirm('Delete?'))return;try{await api('/api/admin/plans/'+id,{method:'DELETE'});toast('✅ Deleted');loadPlans();}catch(e){toast(e.message,'err');}}
+
+// ═══════════════════ CARDS ═══════════════════
+async function loadCards(){
+  if(!_state.plans.length) await loadPlans();
+  try{
+    const rows=await api('/api/admin/cards');
+    me('cards-tbody', rows.length ? rows.map(c=>`
+      <tr>
+        <td><code>${esc(c.card_code)}</code></td>
+        <td>${esc(c.plan_name||'—')}</td>
+        <td>${c.status==='unused'?'<span class="badge bg-ok">✅ Active</span>':'<span class="badge bg-gray">Used</span>'}</td>
+        <td class="mini muted">${fmt(c.used_at)}</td>
+        <td>${c.status==='unused'?`<button class="btn-danger btn-xs" onclick="delCard(${c.id})">🗑️</button>`:'—'}</td>
+      </tr>`).join('') : emptyRow(5));
+  }catch(e){}
+}
+async function generateCards(){
+  const pid=$('card-plan-id').value; if(!pid){toast('Select a plan','err');return;}
+  try{
+    const d=await api('/api/admin/cards/generate',{method:'POST',body:JSON.stringify({plan_id:parseInt(pid),count:parseInt($('card-count').value)||5,prefix:$('card-prefix').value.trim()})});
+    $('cards-result').innerHTML=`<div class="alert alert-ok"><strong>✅ ${d.codes.length} codes:</strong><pre style="margin-top:8px;font-size:12px;max-height:160px;overflow:auto">${d.codes.join('\n')}</pre></div>`;
+    $('cards-result').style.display='block'; loadCards();
+  }catch(e){$('cards-result').innerHTML=`<div class="alert alert-err">${esc(e.message)}</div>`;$('cards-result').style.display='block';}
+}
+async function delCard(id){try{await api('/api/admin/cards/'+id,{method:'DELETE'});toast('✅ Deleted');loadCards();}catch(e){toast(e.message,'err');}}
+
+// ═══════════════════ ACCOUNTS ═══════════════════
+async function loadAccounts(){
+  try{
+    const rows=await api('/api/admin/main-accounts'); _state.accounts=rows; updateAccSels(rows);
+    me('accounts-tbody', rows.length ? rows.map(a=>`
+      <tr>
+        <td>${a.id}</td><td class="fw800">${esc(a.name)}</td><td>${esc(a.phone)}</td>
+        <td>${a.online_status?'<span class="badge bg-ok">🟢</span>':'<span class="badge bg-gray">⚫</span>'}</td>
+        <td><span class="badge ${a.login_status==='logged_in'||a.login_status==='idle'?'bg-ok':a.login_status==='need_code'||a.login_status==='need_2fa'?'bg-warn':'bg-gray'}">${esc(a.login_status||'idle')}</span></td>
+        <td><div class="actions">
+          <button class="btn-ghost btn-xs" onclick='fillAcc(${JSON.stringify(a).replace(/'/g,"&#39;")})'>✏️</button>
+          <button class="btn-pri btn-xs" onclick="openLoginModal(${a.id},'${esc(a.name)}','${esc(a.phone)}')">🔑 Login</button>
+          <button class="btn-warn btn-xs" onclick="openSessionPanel(${a.id},'${esc(a.name)}')">📂 Session</button>
+          <button class="btn-ghost btn-xs" onclick="fetchGroups(${a.id})" title="Sync groups">🔄</button>
+          <button class="btn-danger btn-xs" onclick="delAcc(${a.id})">🗑️</button>
+        </div></td>
+      </tr>`).join('') : emptyRow(6));
+  }catch(e){me('accounts-tbody',emptyRow(6,esc(e.message)));}
+}
+function fillAcc(a){$('acc-id').value=a.id;$('acc-name').value=a.name;$('acc-phone').value=a.phone;$('acc-api-id').value=a.api_id;$('acc-api-hash').value=a.api_hash;$('acc-proxy').value=a.proxy_url||'';$('acc-remark').value=a.remark||'';$('acc-form-title').textContent='✏️ 编辑主号';}
+function resetAccForm(){['acc-id','acc-name','acc-phone','acc-api-id','acc-api-hash','acc-proxy','acc-remark'].forEach(k=>$(k)&&($(k).value=''));if($('acc-form-title'))$('acc-form-title').textContent=t('add_account');}
+async function saveAccount(){
+  const id=$('acc-id').value;
+  const body={name:$('acc-name').value,phone:$('acc-phone').value,api_id:$('acc-api-id').value,api_hash:$('acc-api-hash').value,proxy_url:$('acc-proxy').value,remark:$('acc-remark').value};
+  if(!body.name||!body.api_id||!body.api_hash){toast('Name, API_ID, API_HASH required','err');return;}
+  try{if(id)await api('/api/admin/main-accounts/'+id,{method:'PUT',body:JSON.stringify(body)});else await api('/api/admin/main-accounts',{method:'POST',body:JSON.stringify(body)});toast('✅ Saved');resetAccForm();loadAccounts();}catch(e){toast(e.message,'err');}
+}
+async function delAcc(id){if(!confirm('Delete account?'))return;try{await api('/api/admin/main-accounts/'+id,{method:'DELETE'});toast('✅ Deleted');loadAccounts();}catch(e){toast(e.message,'err');}}
+async function fetchGroups(id){try{await api('/api/admin/main-accounts/'+id+'/request-fetch-groups',{method:'POST'});toast('✅ Fetch groups request sent');}catch(e){toast(e.message,'err');}}
+function openSessionPanel(id,name){$('session-acc-id').value=id;$('session-acc-name').textContent=name;$('session-file').value='';$('session-str').value='';$('session-panel').classList.remove('hidden');$('session-panel').scrollIntoView({behavior:'smooth'});}
+async function submitSessionStr(){const id=$('session-acc-id').value,s=$('session-str').value.trim();if(!s){toast('Paste session string','err');return;}try{await api('/api/admin/main-accounts/'+id+'/set-session',{method:'POST',body:JSON.stringify({session_string:s})});toast('✅ Session saved');$('session-panel').classList.add('hidden');loadAccounts();}catch(e){toast(e.message,'err');}}
+async function uploadSessionFile(){const id=$('session-acc-id').value,file=$('session-file').files[0];if(!file){toast('Choose a file','err');return;}const fd=new FormData();fd.append('file',file);try{const r=await fetch('/api/admin/main-accounts/'+id+'/upload-session',{method:'POST',headers:{Authorization:'Bearer '+_tk},body:fd});const data=await r.json();if(data.code!==0)throw new Error(data.message);toast('✅ Session uploaded');$('session-panel').classList.add('hidden');loadAccounts();}catch(e){toast(e.message,'err');}}
+
+// Login modal
+function openLoginModal(id,name,phone){$('lm-acc-id').value=id;$('lm-name').textContent=name;$('lm-phone').textContent=phone;['lm-step2','lm-step3'].forEach(s=>$(s).style.display='none');$('lm-step1').style.display='block';$('lm-code').value='';$('lm-pass').value='';setLmStatus(t('waiting'),'info');$('login-modal').classList.add('show');}
+function closeLoginModal(){$('login-modal').classList.remove('show');stopLoginPoll();}
+function stopLoginPoll(){if(_loginPoll){clearInterval(_loginPoll);_loginPoll=null;}}
+function setLmStatus(msg,type='info'){const el=$('lm-status');if(!el)return;el.className='alert alert-'+type;el.innerHTML=`<i class="fas fa-circle-${type==='ok'?'check':type==='err'?'xmark':'info'}"></i> ${msg}`;}
+async function sendLoginCode(){const id=$('lm-acc-id').value;$('btn-send-code').disabled=true;$('btn-send-code').innerHTML='<i class="fas fa-spinner fa-spin me-1"></i>...';try{await api('/api/admin/main-accounts/'+id+'/send-code',{method:'POST'});setLmStatus('⏳ 正在发送验证码，请稍候...','info');startLoginPoll(id);}catch(e){setLmStatus('❌ '+e.message,'err');}finally{$('btn-send-code').disabled=false;$('btn-send-code').innerHTML='<i class="fas fa-paper-plane me-1"></i>'+t('btn_send_code');}}
+async function submitLoginCode(){const id=$('lm-acc-id').value,code=$('lm-code').value.trim();if(!code){toast('Enter code','err');return;}try{await api('/api/admin/main-accounts/'+id+'/login',{method:'POST',body:JSON.stringify({code})});setLmStatus('⏳ Verifying...','info');}catch(e){setLmStatus('❌ '+e.message,'err');}}
+async function submitLoginPassword(){const id=$('lm-acc-id').value,pass=$('lm-pass').value.trim();if(!pass){toast('Enter password','err');return;}try{await api('/api/admin/main-accounts/'+id+'/login',{method:'POST',body:JSON.stringify({password:pass})});setLmStatus('⏳ Verifying 2FA...','info');}catch(e){setLmStatus('❌ '+e.message,'err');}}
+function startLoginPoll(id){_loginPoll=setInterval(async()=>{try{const d=await api('/api/admin/main-accounts/'+id+'/login-status');const s=d.login_status;if(s==='logged_in'||s==='success'){setLmStatus('✅ 登录成功！','ok');stopLoginPoll();setTimeout(()=>closeLoginModal(),1500);loadAccounts();}else if(s==='need_2fa'){setLmStatus('🔐 需要两步验证密码','info');$('lm-step3').style.display='block';}else if(s==='error'||s==='failed'){setLmStatus('❌ 失败：'+(d.login_error||s),'err');stopLoginPoll();}else if(s==='code_sent'){setLmStatus('📩 验证码已发送到手机，请输入','info');$('lm-step2').style.display='block';}else if(s==='request_code'){setLmStatus('⏳ 正在发送验证码...','info');}}catch(_){}},2500);}
+
+// ═══════════════════ PROTOCOLS ═══════════════════
+async function loadProtocols(){
+  if(!_state.users.length){_state.users=await api('/api/admin/users');populateSel('prot-user-id',_state.users,u=>({v:u.id,t:u.username?'@'+u.username:u.nickname||String(u.id)}));}
+  try{
+    const rows=await api('/api/admin/protocol-accounts');
+    me('protocols-tbody', rows.length ? rows.map(p=>{
+      const proxyBadge = p.proxy_url
+        ? `<span class="badge bg-ok" title="${esc(p.proxy_url)}" style="cursor:pointer" onclick="openProxyModal(${p.id},'${esc(p.phone||'')}','${esc(p.proxy_url||'')}')">🛡️ ${esc(p.proxy_url.replace(/\/\/.*@/,'//***@').substring(0,22))}${p.proxy_url.length>22?'…':''}</span>`
+        : `<button class="btn-warn btn-xs" onclick="openProxyModal(${p.id},'${esc(p.phone||'')}','')">+ ${t('add_proxy')}</button>`;
+      return `<tr>
+        <td>${p.id}</td><td>${p.owner_username?'@'+esc(p.owner_username):'—'}</td>
+        <td>${esc(p.phone||'')}</td><td>${p.username?'@'+esc(p.username):'—'}</td>
+        <td>${proxyBadge}</td>
+        <td>${p.status?'<span class="badge bg-ok">✅</span>':'<span class="badge bg-fail">❌</span>'}</td>
+        <td>${p.outbound_count??0}</td><td class="mini muted">${fmt(p.created_at)}</td>
+        <td><button class="btn-danger btn-xs" onclick="delProto(${p.id})">🗑️</button></td>
+      </tr>`;}).join('') : emptyRow(9));
+  }catch(e){}
+}
+async function importProtocols(){const uid=$('prot-user-id').value,file=$('prot-file').files[0];if(!uid||!file){toast('Select user and file','err');return;}const fd=new FormData();fd.append('file',file);fd.append('user_id',uid);fd.append('proxy_url',$('prot-proxy').value||'');try{const r=await fetch('/api/admin/protocol-accounts/import',{method:'POST',headers:{Authorization:'Bearer '+_tk},body:fd});const data=await r.json();if(data.code!==0)throw new Error(data.message);toast(`✅ Imported ${data.data.imported}`);loadProtocols();}catch(e){toast(e.message,'err');}}
+async function delProto(id){try{await api('/api/admin/protocol-accounts/'+id,{method:'DELETE'});toast('✅ Deleted');loadProtocols();}catch(e){toast(e.message,'err');}}
+async function deleteInactiveProtocols(){if(!confirm('Delete all inactive accounts?'))return;try{await api('/api/admin/protocols/delete-inactive',{method:'POST'});toast('✅ Cleaned');loadProtocols();}catch(e){toast(e.message,'err');}}
+
+// ═══════════════════ PROXY EDIT MODAL ═══════════════════
+function openProxyModal(id, phone, currentProxy){
+  $('pem-acc-id').value = id;
+  $('pem-phone').textContent = phone ? '(' + phone + ')' : '';
+  ['pem-type','pem-host','pem-port','pem-user','pem-pass'].forEach(f=>$(f)&&($(f).value=''));
+  $('pem-url').value = currentProxy || '';
+  if (currentProxy) pemParse();
+  $('proxy-edit-modal').classList.add('show');
+}
+function closeProxyModal(){ $('proxy-edit-modal').classList.remove('show'); }
+function pemBuild(){
+  const type=$('pem-type').value, host=$('pem-host').value.trim();
+  const port=$('pem-port').value.trim();
+  const user=$('pem-user').value.trim(), pass=$('pem-pass').value.trim();
+  if(!host||!port){toast(t('proxy_err_host'),'err');return;}
+  let url = type+'://';
+  if(user && pass) url += encodeURIComponent(user)+':'+encodeURIComponent(pass)+'@';
+  else if(user) url += encodeURIComponent(user)+'@';
+  url += host+':'+port;
+  $('pem-url').value = url;
+}
+function pemParse(){
+  const raw=$('pem-url').value.trim();
+  if(!raw) return;
+  try{
+    const m = raw.match(/^(socks5|socks4|http):\/\/(?:([^:@]+)(?::([^@]*))?@)?([^:]+):(\d+)/i);
+    if(!m) return;
+    $('pem-type').value = m[1].toLowerCase();
+    $('pem-user').value = m[2] ? decodeURIComponent(m[2]) : '';
+    $('pem-pass').value = m[3] ? decodeURIComponent(m[3]) : '';
+    $('pem-host').value = m[4] || '';
+    $('pem-port').value = m[5] || '';
+  }catch(_){}
+}
+function pemUrlChanged(){ /* live update placeholder */ }
+async function saveProtoProxy(){
+  const id=$('pem-acc-id').value;
+  const url=$('pem-url').value.trim();
+  if(!url){ toast(t('proxy_err_empty'),'err'); return; }
+  try{
+    await api('/api/admin/protocol-accounts/'+id+'/proxy',{method:'PUT',body:JSON.stringify({proxy_url:url})});
+    toast('✅ '+t('proxy_saved'));
+    closeProxyModal(); loadProtocols();
+  }catch(e){toast(e.message,'err');}
+}
+async function clearProtoProxy(){
+  const id=$('pem-acc-id').value;
+  if(!confirm(t('proxy_confirm_clear'))) return;
+  try{
+    await api('/api/admin/protocol-accounts/'+id+'/proxy',{method:'PUT',body:JSON.stringify({proxy_url:''})});
+    toast('✅ '+t('proxy_cleared'));
+    closeProxyModal(); loadProtocols();
+  }catch(e){toast(e.message,'err');}
+}
+
+// ═══════════════════ REPLIES ═══════════════════
+async function loadReplies(){
+  if(!_state.users.length){_state.users=await api('/api/admin/users');populateSel('reply-user-id',_state.users,u=>({v:u.id,t:u.username?'@'+u.username:u.nickname||String(u.id)}));}
+  try{
+    const rows=await api('/api/admin/auto-replies');
+    me('replies-tbody', rows.length ? rows.map(r=>`
+      <tr>
+        <td>${r.id}</td><td>${r.owner_username?'@'+esc(r.owner_username):'—'}</td>
+        <td><span class="tag">${esc(r.keyword)}</span></td>
+        <td class="mini muted">${esc((r.reply_content||'').substring(0,50))}${r.reply_content?.length>50?'...':''}</td>
+        <td class="mini muted">${fmt(r.created_at)}</td>
+        <td><button class="btn-danger btn-xs" onclick="delReply(${r.id})">🗑️</button></td>
+      </tr>`).join('') : emptyRow(6));
+  }catch(e){}
+}
+async function addAutoReply(){const uid=$('reply-user-id').value,kw=$('reply-keyword').value.trim(),content=$('reply-content').value.trim();if(!uid||!kw||!content){toast('Fill all fields','err');return;}try{await api('/api/admin/auto-replies',{method:'POST',body:JSON.stringify({user_id:parseInt(uid),keyword:kw,reply_content:content})});toast('✅ Saved');$('reply-keyword').value='';$('reply-content').value='';renderReplyPreview();loadReplies();}catch(e){toast(e.message,'err');}}
+async function delReply(id){try{await api('/api/admin/auto-replies/'+id,{method:'DELETE'});toast('✅ Deleted');loadReplies();}catch(e){toast(e.message,'err');}}
+function renderReplyPreview(){const raw=$('reply-content')?.value||'';if(!raw.trim()){$('reply-preview').innerHTML=`<span class="muted mini">${t('preview_placeholder')}</span>`;return;}$('reply-preview').innerHTML=raw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/(https?:\/\/[^\s]+)/g,'<a href="$1" target="_blank">$1</a>').replace(/(^|[\s])@([a-z0-9_]+)/gi,'$1<a href="https://t.me/$2" target="_blank">@$2</a>').replace(/\n/g,'<br>');}
+$('reply-content')?.addEventListener('input', renderReplyPreview);
+
+// ═══════════════════ GROUPS ═══════════════════
+async function loadGroups(){
+  try{
+    const[accs,rows]=await Promise.all([api('/api/admin/main-accounts'),api('/api/admin/monitored-groups')]);
+    _state.accounts=accs; updateAccSels(accs);
+    me('groups-tbody', rows.length ? rows.map(g=>`
+      <tr>
+        <td>${g.id}</td><td>${esc(g.main_account_name||'—')}</td>
+        <td class="mono mini">${esc(g.telegram_group_id||'')}</td>
+        <td>${esc(g.group_title||'')}</td>
+        <td>${g.group_username?'@'+esc(g.group_username):'—'}</td>
+        <td>${g.is_kicked?'<span class="badge bg-fail">⚠️ Kicked</span>':(g.status===0?'<span class="badge bg-gray">⚫</span>':(g.is_blocked?'<span class="badge bg-fail">🔴</span>':'<span class="badge bg-ok">🟢</span>'))}</td>
+        <td><div class="actions">
+          <button class="btn-${g.is_blocked?'ok':'warn'} btn-xs" onclick="toggleBlock(${g.id})">${g.is_blocked?'Unblock':'Block'}</button>
+          <button class="btn-${g.status?'ghost':'ok'} btn-xs" onclick="toggleStatus(${g.id})">${g.status?'Pause':'Enable'}</button>
+          <button class="btn-danger btn-xs" onclick="delGroup(${g.id})">🗑️</button>
+        </div></td>
+      </tr>`).join('') : emptyRow(7));
+  }catch(e){}
+}
+async function fetchGroupsFromPage(){
+  const accs=_state.accounts.filter(a=>a.run_status===1||a.run_status==='1');
+  if(!accs.length){toast('没有在线主号','err');return;}
+  let done=0;
+  for(const a of accs){
+    try{await api('/api/admin/main-accounts/'+a.id+'/request-fetch-groups',{method:'POST'});done++;}catch(_){}
+  }
+  toast(`✅ 已发送获取群组请求 (${done}个主号)，约30秒后刷新`);
+  setTimeout(()=>loadGroups(),32000);
+}
+async function addGroup(){const body={main_account_id:parseInt($('group-acc-id').value),telegram_group_id:$('group-id').value,group_title:$('group-title').value||'Unknown',group_username:$('group-username').value,status:1};if(!body.main_account_id||!body.telegram_group_id){toast('Select account and group ID','err');return;}try{await api('/api/admin/monitored-groups',{method:'POST',body:JSON.stringify(body)});['group-id','group-title','group-username'].forEach(k=>$(k)&&($(k).value=''));toast('✅ Added');loadGroups();}catch(e){toast(e.message,'err');}}
+async function toggleBlock(id){try{await api('/api/admin/monitored-groups/'+id+'/toggle-block',{method:'PUT'});loadGroups();}catch(e){toast(e.message,'err');}}
+async function toggleStatus(id){try{await api('/api/admin/monitored-groups/'+id+'/toggle-status',{method:'PUT'});loadGroups();}catch(e){toast(e.message,'err');}}
+async function delGroup(id){if(!confirm('Delete?'))return;try{await api('/api/admin/monitored-groups/'+id,{method:'DELETE'});toast('✅ Deleted');loadGroups();}catch(e){toast(e.message,'err');}}
+
+// ═══════════════════ JOIN QUEUE ═══════════════════
+async function loadJoinQueue(){
+  if(!_state.accounts.length){_state.accounts=await api('/api/admin/main-accounts');updateAccSels(_state.accounts);}
+  try{
+    const rows=await api('/api/admin/join-queue');
+    const p=rows.filter(r=>r.status==='pending'||r.status==='waiting').length;
+    const d=rows.filter(r=>r.status==='done').length;
+    const f=rows.filter(r=>r.status==='failed').length;
+    me('join-stats-grid',`
+      <div class="stat-card" style="padding:16px"><div class="si si-yellow"><i class="fas fa-hourglass-half"></i></div><div><div class="sn">${p}</div><div class="sl">Pending</div></div></div>
+      <div class="stat-card" style="padding:16px"><div class="si si-green"><i class="fas fa-circle-check"></i></div><div><div class="sn">${d}</div><div class="sl">Done</div></div></div>
+      <div class="stat-card" style="padding:16px"><div class="si si-red"><i class="fas fa-circle-xmark"></i></div><div><div class="sn">${f}</div><div class="sl">Failed</div></div></div>`);
+    me('joinqueue-tbody', rows.length ? rows.map(q=>`
+      <tr>
+        <td>${q.id}</td><td>${esc(q.account_name||'—')}</td>
+        <td><a href="${esc(q.group_link)}" target="_blank" class="mini">${esc(q.group_link)}</a></td>
+        <td>${q.min_delay_s}~${q.max_delay_s}s</td>
+        <td>${{pending:'<span class="badge bg-warn">⏳</span>',waiting:'<span class="badge bg-warn">⏳</span>',done:'<span class="badge bg-ok">✅</span>',failed:'<span class="badge bg-fail">❌</span>'}[q.status]||esc(q.status)}</td>
+        <td class="mini muted">${esc(q.error_msg||'')}</td>
+        <td class="mini muted">${fmt(q.executed_at)}</td>
+        <td><button class="btn-danger btn-xs" onclick="delQ(${q.id})">🗑️</button></td>
+      </tr>`).join('') : emptyRow(8));
+  }catch(e){}
+}
+async function addJoinQueue(){const accId=$('join-acc-id').value;if(!accId){toast('Select account','err');return;}const links=($('join-links').value||'').split('\n').map(l=>l.trim()).filter(Boolean);if(!links.length){toast('Enter group links','err');return;}const minD=parseInt($('join-min').value)||300,maxD=parseInt($('join-max').value)||600;if(minD<10||maxD<minD){toast('Invalid delay range','err');return;}try{const d=await api('/api/admin/join-queue',{method:'POST',body:JSON.stringify({main_account_id:parseInt(accId),group_links:links,min_delay_s:minD,max_delay_s:maxD})});toast(`✅ Added ${d.added} tasks`);$('join-links').value='';loadJoinQueue();}catch(e){toast(e.message,'err');}}
+async function delQ(id){try{await api('/api/admin/join-queue/'+id,{method:'DELETE'});loadJoinQueue();}catch(e){}}
+async function clearDoneQueue(){if(!confirm('Clear done?'))return;try{await api('/api/admin/join-queue?status=done',{method:'DELETE'});loadJoinQueue();}catch(e){}}
+async function clearFailedQueue(){if(!confirm('Clear failed?'))return;try{await api('/api/admin/join-queue?status=failed',{method:'DELETE'});loadJoinQueue();}catch(e){}}
+
+// ═══════════════════ LISTEN DATA ═══════════════════
+async function loadListened(){
+  try{
+    const rows=await api('/api/admin/listened-users');
+    me('listendata-tbody', rows.length ? rows.map((r,i)=>`
+      <tr>
+        <td>${i+1}</td><td>${esc(r.source_group_title||'—')}</td>
+        <td><span class="tag">${esc(r.matched_keyword||'—')}</span></td>
+        <td>${r.sender_username?`<a href="https://t.me/${esc(r.sender_username)}" target="_blank">@${esc(r.sender_username)}</a>`:(esc(r.sender_name||'—'))}</td>
+        <td><code>${r.sender_id||'—'}</code></td>
+        <td class="mini muted">${esc((r.raw_text||'').substring(0,60))}${r.raw_text?.length>60?'...':''}</td>
+        <td class="mini muted">${fmt(r.created_at)}</td>
+      </tr>`).join('') : emptyRow(7));
+  }catch(e){}
+}
+async function exportListened(){const r=await fetch('/api/admin/listened-users/export',{headers:{Authorization:'Bearer '+_tk}});const b=await r.blob();const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='listened.txt';a.click();}
+async function clearListened(){if(!confirm('Clear all monitored data?'))return;try{await api('/api/admin/listened-users',{method:'DELETE'});toast('✅ Cleared');loadListened();}catch(e){toast(e.message,'err');}}
+
+// ═══════════════════ CHAT LOGS ═══════════════════
+async function loadChatLogs(){
+  try{
+    const rows=await api('/api/admin/chat-logs');
+    me('chatlogs-tbody', rows.length ? rows.map((r,i)=>`
+      <tr>
+        <td>${i+1}</td>
+        <td>${r.sender_username?`<a href="https://t.me/${esc(r.sender_username)}" target="_blank">@${esc(r.sender_username)}</a>`:(esc(r.sender_name||'—'))}</td>
+        <td><code>${r.sender_id||'—'}</code></td>
+        <td class="mini">${esc((r.message_text||'').substring(0,60))}${r.message_text?.length>60?'...':''}</td>
+        <td>${r.log_type==='inbound'?'<span class="badge bg-ok">📥</span>':'<span class="badge bg-warn">📤</span>'}</td>
+        <td class="mini muted">${fmt(r.created_at)}</td>
+      </tr>`).join('') : emptyRow(6));
+  }catch(e){}
+}
+async function exportChatLogs(){const r=await fetch('/api/admin/chat-logs/export',{headers:{Authorization:'Bearer '+_tk}});const b=await r.blob();const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='chatlogs.txt';a.click();}
+async function clearChatLogs(){if(!confirm('Clear all chat logs?'))return;try{await api('/api/admin/chat-logs',{method:'DELETE'});toast('✅ Cleared');loadChatLogs();}catch(e){toast(e.message,'err');}}
+
+// ═══════════════════ LEAD ═══════════════════
+async function loadLead(){
+  try{
+    const rows=await api('/api/admin/lead-softwares');
+    me('lead-tbody', rows.length ? rows.map(l=>`
+      <tr>
+        <td class="fw800">${esc(l.title)}</td>
+        <td>${l.url?`<a href="${esc(l.url)}" target="_blank" class="mini">${esc(l.url.substring(0,30))}</a>`:'—'}</td>
+        <td class="mini muted">${esc((l.description||'').substring(0,40))}</td>
+        <td>${l.sort_no??0}</td>
+        <td><div class="actions">
+          <button class="btn-ghost btn-xs" onclick='fillLead(${JSON.stringify(l).replace(/'/g,"&#39;")})'>✏️</button>
+          <button class="btn-danger btn-xs" onclick="delLead(${l.id})">🗑️</button>
+        </div></td>
+      </tr>`).join('') : emptyRow(5));
+  }catch(e){}
+}
+function fillLead(l){$('lead-id').value=l.id;$('lead-title').value=l.title;$('lead-url').value=l.url||'';$('lead-desc').value=l.description||'';$('lead-sort').value=l.sort_no||0;$('lead-form-title').textContent='✏️ 编辑';}
+function resetLeadForm(){['lead-id','lead-title','lead-url','lead-desc'].forEach(k=>$(k)&&($(k).value=''));if($('lead-sort'))$('lead-sort').value=0;if($('lead-form-title'))$('lead-form-title').textContent=t('add_lead');}
+async function saveLead(){const id=$('lead-id').value;const body={title:$('lead-title').value,url:$('lead-url').value,description:$('lead-desc').value,sort_no:parseInt($('lead-sort').value)||0,status:1};if(!body.title){toast('Enter title','err');return;}try{if(id)await api('/api/admin/lead-softwares/'+id,{method:'PUT',body:JSON.stringify(body)});else await api('/api/admin/lead-softwares',{method:'POST',body:JSON.stringify(body)});toast('✅ Saved');resetLeadForm();loadLead();}catch(e){toast(e.message,'err');}}
+async function delLead(id){if(!confirm('Delete?'))return;try{await api('/api/admin/lead-softwares/'+id,{method:'DELETE'});toast('✅ Deleted');loadLead();}catch(e){toast(e.message,'err');}}
+
+// ═══════════════════ SETTINGS ═══════════════════
+// ═══ Keys that must NEVER appear in the dashboard (edit manually in .env / config) ═══
+const SENSITIVE_KEYS = new Set([
+  'bot_token', 'global_api_id', 'global_api_hash',
+  'admin_telegram_id', 'session_secret', 'secret_key',
+  'database_url', 'db_url', 'db_password', 'api_token',
+]);
+
+const SETTING_GROUPS = {
+  payment: {
+    label: { en:'💳 Payment', zh:'💳 支付设置' },
+    icon: '<i class="fas fa-wallet"></i>', color:'#10b981', bg:'#f0fdf4',
+    keys: ['usdt_trc20_address','usdt_payment_notice']
+  },
+  system: {
+    label: { en:'⚙️ System', zh:'⚙️ 系统设置' },
+    icon: '<i class="fas fa-gear"></i>', color:'#3b82f6', bg:'#eff6ff',
+    keys: ['site_name','customer_service_username','frontend_notice']
+  },
+  content: {
+    label: { en:'📝 Content', zh:'📝 内容设置' },
+    icon: '<i class="fas fa-file-lines"></i>', color:'#8b5cf6', bg:'#f5f3ff',
+    keys: ['welcome_message','menu_message','subscription_expired_message','no_plan_message']
+  },
+  limits: {
+    label: { en:'🛡️ Limits', zh:'🛡️ 限制配置' },
+    icon: '<i class="fas fa-shield-halved"></i>', color:'#f59e0b', bg:'#fffbeb',
+    keys: ['max_keywords_per_user','daily_outbound_limit','expire_soon_days']
+  },
+  proxy: {
+    label: { en:'🌐 Proxy & Network', zh:'🌐 代理设置' },
+    icon: '<i class="fas fa-globe"></i>', color:'#06b6d4', bg:'#ecfeff',
+    keys: ['protocol_proxy_url']
+  },
+};
+
+async function loadSettings(){
+  try{
+    const rows=await api('/api/admin/system-settings'); _state.settings=rows;
+    buildSysCards();
+    // Load proxy URL into builder fields
+    const proxyRow = rows.find(r => r.setting_key === 'protocol_proxy_url');
+    if (proxyRow?.setting_value) loadProxyToFields(proxyRow.setting_value);
+    const byKey = {};
+    rows.forEach(r=>{ if(!SENSITIVE_KEYS.has(r.setting_key) && r.setting_key !== 'protocol_proxy_url') byKey[r.setting_key]=r; });
+    const l=_state.lang;
+
+    // Readonly notice about sensitive settings
+    const sensitiveFound = rows.filter(r=>SENSITIVE_KEYS.has(r.setting_key));
+    const secNotice = sensitiveFound.length ? `
+      <div class="alert alert-warn" style="grid-column:1/-1;align-items:flex-start">
+        <i class="fas fa-lock" style="margin-top:2px;flex-shrink:0"></i>
+        <div>
+          <div style="font-weight:800;margin-bottom:4px">
+            ${l==='zh'?'敏感配置项已隐藏':'Sensitive settings are hidden'}
+          </div>
+          <div style="font-size:12px;opacity:.85">
+            ${l==='zh'
+              ?`以下配置必须直接编辑配置文件：<code>${sensitiveFound.map(r=>r.setting_key).join(', ')}</code>`
+              :`The following must be edited in the config file only: <code>${sensitiveFound.map(r=>r.setting_key).join(', ')}</code>`}
+          </div>
+        </div>
+      </div>` : '';
+
+    const groups = Object.entries(SETTING_GROUPS).map(([gid,g])=>{
+      const visibleKeys = g.keys.filter(k => byKey[k]);
+      if(!visibleKeys.length) return '';
+      return `
+      <div class="setting-group">
+        <div class="sg-head">
+          <div class="sg-icon" style="background:${g.bg};color:${g.color}">${g.icon}</div>
+          <div class="sg-label">${g.label[l]||g.label.zh}</div>
+        </div>
+        <div class="sg-body">
+          ${visibleKeys.map(k=>{
+            const s=byKey[k];
+            const isLong=k.includes('message')||k.includes('notice')||k.includes('payment');
+            return `<div class="sg-field fg">
+              <label><i class="fas fa-pen fa-xs"></i> ${esc(s.description||k)}</label>
+              ${isLong
+                ?`<textarea data-setting="${esc(k)}" style="min-height:70px">${esc(s.setting_value||'')}</textarea>`
+                :`<input data-setting="${esc(k)}" value="${esc(s.setting_value||'')}" />`}
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }).join('');
+
+    // Ungrouped non-sensitive settings
+    const groupedKeys = Object.values(SETTING_GROUPS).flatMap(g=>g.keys);
+    const ungrouped = Object.values(byKey).filter(r=>!groupedKeys.includes(r.setting_key));
+    const extraGroup = ungrouped.length ? `
+      <div class="setting-group" style="grid-column:1/-1">
+        <div class="sg-head">
+          <div class="sg-icon" style="background:#f1f5f9;color:#64748b"><i class="fas fa-ellipsis"></i></div>
+          <div class="sg-label">${l==='zh'?'其他设置':l==='en'?'Other Settings':'其他设置'}</div>
+        </div>
+        <div class="sg-body" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">
+          ${ungrouped.map(r=>`
+            <div class="sg-field fg">
+              <label><i class="fas fa-pen fa-xs"></i> ${esc(r.description||r.setting_key)}</label>
+              <input data-setting="${esc(r.setting_key)}" value="${esc(r.setting_value||'')}"/>
+            </div>`).join('')}
+        </div>
+      </div>` : '';
+
+    me('settings-groups', secNotice + groups + extraGroup);
+    $('settings-warning').style.display='flex';
+  }catch(e){me('settings-groups',`<div class="alert alert-err">${esc(e.message)}</div>`);}
+}
+
+function buildSysCards(){
+  const l=_state.lang;
+  document.querySelectorAll('.sys-card .sys-title').forEach((el,i)=>{
+    const keys=['sys_sync','sys_restart','sys_save','sys_health'];
+    el.textContent = I18N[l]?.[keys[i]]||el.textContent;
+  });
+  document.querySelectorAll('.sys-card .sys-desc').forEach((el,i)=>{
+    const keys=['sys_sync_desc','sys_restart_desc','sys_save_desc','sys_health_desc'];
+    el.textContent = I18N[l]?.[keys[i]]||el.textContent;
+  });
+}
+
+async function saveSettings(){
+  const items=[...document.querySelectorAll('[data-setting]')].map(el=>({setting_key:el.dataset.setting,setting_value:el.value,setting_type:(_state.settings.find(x=>x.setting_key===el.dataset.setting)||{}).setting_type||'string',description:(_state.settings.find(x=>x.setting_key===el.dataset.setting)||{}).description||''}));
+  try{await api('/api/admin/system-settings',{method:'POST',body:JSON.stringify({items})});toast('✅ Settings saved');loadSettings();}catch(e){toast(e.message,'err');}
+}
+async function syncDb(){try{const d=await api('/api/admin/system/sync-db',{method:'POST'});toast('✅ '+(d.message||'DB synced'));}catch(e){toast(e.message,'err');}}
+async function restartSystem(){if(!confirm(t('restart_warning')+'\n\nContinue?'))return;try{await api('/api/admin/system/restart',{method:'POST',body:JSON.stringify({target:'all'})});toast('🔄 Restarting...');setTimeout(()=>location.reload(),5000);}catch(e){toast(e.message,'err');}}
+
+// ═══════════════════ INIT ═══════════════════
+const _savedLang = localStorage.getItem('admin_lang') || 'zh';
+_state.lang = _savedLang;
+setLang(_savedLang);
+
+// Click outside modals to close
+document.getElementById('proxy-edit-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('proxy-edit-modal')) closeProxyModal();
+});
+document.getElementById('login-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('login-modal')) closeLoginModal();
+});
+
+silentPing();
+showSec('dashboard');
+</script>
+</body>
+</html>
