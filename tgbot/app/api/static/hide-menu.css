@@ -1,0 +1,4 @@
+a[data-tab="listened"],
+a[data-tab="logs"] {
+  display: none !important;
+}

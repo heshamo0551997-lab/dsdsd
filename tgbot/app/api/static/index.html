@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TG Monitor Pro · 管理系统</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600;700&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --pri:#4361ee;--pri2:#7c3aed;--ok:#10b981;
+  --card-bg:rgba(255,255,255,0.04);
+  --border:rgba(255,255,255,0.08);
+  --txt:#f1f5f9;--muted:rgba(255,255,255,0.38);
+}
+body{
+  font-family:'Noto Sans SC','Inter','Cairo',system-ui,sans-serif;
+  background:#070d1a;min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;position:relative;
+}
+
+/* ═══ BACKGROUND ═══ */
+.bg-layer{position:fixed;inset:0;z-index:0}
+.blob{
+  position:absolute;border-radius:50%;
+  filter:blur(90px);opacity:.12;
+  animation:blobAnim 10s ease-in-out infinite;
+}
+.b1{width:520px;height:520px;background:radial-gradient(circle,#4361ee,#7c3aed);top:-120px;left:-120px;animation-delay:0s}
+.b2{width:400px;height:400px;background:radial-gradient(circle,#06b6d4,#4361ee);bottom:-100px;right:-100px;animation-delay:4s}
+.b3{width:280px;height:280px;background:radial-gradient(circle,#10b981,#4361ee);top:50%;left:60%;transform:translate(-50%,-50%);animation-delay:7s}
+@keyframes blobAnim{0%,100%{transform:scale(1) translate(0,0)}33%{transform:scale(1.08) translate(15px,-20px)}66%{transform:scale(0.95) translate(-10px,10px)}}
+.b2{animation-name:blobAnim2}
+@keyframes blobAnim2{0%,100%{transform:scale(1) translate(0,0)}33%{transform:scale(1.05) translate(-20px,15px)}66%{transform:scale(1.1) translate(10px,-10px)}}
+
+.bg-grid{
+  position:fixed;inset:0;z-index:0;
+  background-image:linear-gradient(rgba(67,97,238,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(67,97,238,.04) 1px,transparent 1px);
+  background-size:48px 48px;
+}
+.bg-noise{
+  position:fixed;inset:0;z-index:0;opacity:.03;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ═══ MAIN CARD ═══ */
+.login-wrap{position:relative;z-index:10;width:100%;max-width:460px;padding:20px}
+.login-card{
+  background:var(--card-bg);
+  backdrop-filter:blur(32px);-webkit-backdrop-filter:blur(32px);
+  border:1px solid var(--border);
+  border-radius:28px;padding:44px 44px 36px;
+  box-shadow:0 40px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.04),inset 0 1px 0 rgba(255,255,255,.08);
+  animation:cardIn .55s cubic-bezier(.34,1.36,.64,1);
+}
+@keyframes cardIn{from{opacity:0;transform:scale(.92) translateY(24px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
+/* ═══ LANGUAGE SWITCHER ═══ */
+.lang-row{display:flex;gap:6px;justify-content:center;margin-bottom:36px}
+.lang-btn{
+  padding:5px 14px;border-radius:20px;
+  border:1px solid rgba(255,255,255,.1);
+  background:transparent;color:var(--muted);
+  font-size:12px;font-weight:600;cursor:pointer;
+  transition:all .2s;font-family:inherit;letter-spacing:.3px;
+}
+.lang-btn.active{
+  background:rgba(67,97,238,.25);border-color:rgba(99,102,241,.5);
+  color:#a5b4fc;box-shadow:0 0 12px rgba(67,97,238,.2);
+}
+.lang-btn:hover:not(.active){border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.6)}
+
+/* ═══ LOGO ═══ */
+.logo-wrap{display:flex;flex-direction:column;align-items:center;margin-bottom:36px}
+.logo-ring{position:relative;width:88px;height:88px;margin-bottom:18px;flex-shrink:0}
+.ring-track{
+  position:absolute;inset:-3px;border-radius:50%;
+  background:conic-gradient(#4361ee 0deg,#7c3aed 120deg,#06b6d4 240deg,#4361ee 360deg);
+  animation:ringRot 3s linear infinite;
+}
+.ring-glow{
+  position:absolute;inset:-3px;border-radius:50%;
+  background:conic-gradient(#4361ee 0deg,#7c3aed 120deg,#06b6d4 240deg,#4361ee 360deg);
+  filter:blur(10px);opacity:.5;
+  animation:ringRot 3s linear infinite;
+}
+@keyframes ringRot{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.logo-core{
+  position:absolute;inset:3px;
+  background:linear-gradient(135deg,#0d1929,#1a2d4f);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:28px;color:#fff;z-index:2;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
+}
+.logo-title{font-size:20px;font-weight:800;color:#fff;letter-spacing:.5px;text-align:center}
+.logo-version{font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:2px;text-align:center}
+
+/* ═══ DIVIDER ═══ */
+.divider{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);margin:0 0 28px}
+
+/* ═══ FORM ═══ */
+.form-group{margin-bottom:18px}
+.form-lbl{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:7px;letter-spacing:.8px;text-transform:uppercase}
+.input-wrap{position:relative}
+.input-ico{position:absolute;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.22);font-size:14px;width:42px;text-align:center;pointer-events:none}
+.input-ico-l{left:0}
+.input-ico-r{right:0}
+.form-inp{
+  width:100%;padding:13px 42px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:13px;color:#fff;font-size:14px;
+  outline:none;transition:all .25s;font-family:inherit;
+}
+.form-inp::placeholder{color:rgba(255,255,255,.2)}
+.form-inp:focus{border-color:rgba(99,102,241,.6);background:rgba(255,255,255,.09);box-shadow:0 0 0 3px rgba(67,97,238,.15)}
+.eye-toggle{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.22);cursor:pointer;font-size:14px;z-index:2;background:none;border:none;padding:4px}
+.eye-toggle:hover{color:rgba(255,255,255,.5)}
+
+html[dir=rtl] .input-ico-l{left:auto;right:0}
+html[dir=rtl] .input-ico-r{right:auto;left:0}
+html[dir=rtl] .eye-toggle{right:auto;left:14px}
+html[dir=rtl] .form-inp{padding:13px 42px}
+
+/* ═══ BUTTON ═══ */
+.btn-login{
+  width:100%;padding:14px;margin-top:6px;
+  background:linear-gradient(135deg,#4361ee,#6366f1,#7c3aed);
+  background-size:200% 200%;border:none;border-radius:13px;
+  color:#fff;font-size:15px;font-weight:700;cursor:pointer;
+  font-family:inherit;letter-spacing:.3px;
+  transition:all .3s;box-shadow:0 8px 28px rgba(67,97,238,.4);
+  position:relative;overflow:hidden;animation:gradShift 4s ease infinite;
+}
+@keyframes gradShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.btn-login::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.12),transparent);opacity:0;transition:opacity .3s}
+.btn-login:hover::before{opacity:1}
+.btn-login:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgba(67,97,238,.5)}
+.btn-login:active{transform:translateY(0);box-shadow:0 4px 12px rgba(67,97,238,.3)}
+.btn-login:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.btn-inner{display:flex;align-items:center;justify-content:center;gap:8px}
+
+/* ═══ ERROR ═══ */
+.err-box{
+  display:none;margin-top:14px;
+  background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);
+  border-radius:11px;padding:11px 14px;font-size:13px;color:#fca5a5;text-align:center;
+  animation:shake .4s ease;
+}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+/* ═══ FOOTER STATUS ═══ */
+.card-foot{
+  margin-top:28px;padding-top:20px;
+  border-top:1px solid rgba(255,255,255,.06);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;
+}
+.sys-online{display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,.25)}
+.sys-dot{width:6px;height:6px;border-radius:50%;background:#10b981;box-shadow:0 0 8px rgba(16,185,129,.6);animation:sysPulse 2s infinite}
+@keyframes sysPulse{0%,100%{opacity:1}50%{opacity:.4}}
+.ver-badge{font-size:11px;color:rgba(255,255,255,.18);letter-spacing:1px}
+.secure-badges{display:flex;gap:10px;align-items:center;font-size:10px;color:rgba(255,255,255,.2)}
+.secure-badges i{font-size:11px;color:rgba(99,102,241,.5)}
+</style>
+</head>
+<body>
+<div class="bg-layer">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+</div>
+<div class="bg-grid"></div>
+<div class="bg-noise"></div>
+
+<div class="login-wrap">
+  <div class="login-card">
+
+    <!-- Language Switcher -->
+    <div class="lang-row">
+      <button class="lang-btn active" data-lang="zh" onclick="switchLang('zh')">🇨🇳 中文</button>
+      <button class="lang-btn" data-lang="en" onclick="switchLang('en')">🇬🇧 EN</button>
+    </div>
+
+    <!-- Logo -->
+    <div class="logo-wrap">
+      <div class="logo-ring">
+        <div class="ring-track"></div>
+        <div class="ring-glow"></div>
+        <div class="logo-core"><i class="fas fa-satellite-dish"></i></div>
+      </div>
+      <div class="logo-title" id="lbl-title">TG Monitor Pro</div>
+      <div class="logo-version">ADMIN CONTROL CENTER · v3.0</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Form -->
+    <form id="loginForm" autocomplete="off">
+      <div class="form-group">
+        <label class="form-lbl" id="lbl-user">用户名</label>
+        <div class="input-wrap">
+          <span class="input-ico input-ico-l"><i class="fas fa-user"></i></span>
+          <input type="text" id="username" class="form-inp" id="lbl-placeholder-user" placeholder="请输入管理员账号" autocomplete="username" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-lbl" id="lbl-pass">密码</label>
+        <div class="input-wrap">
+          <span class="input-ico input-ico-l"><i class="fas fa-lock"></i></span>
+          <input type="password" id="password" class="form-inp" placeholder="••••••••" autocomplete="current-password" required>
+          <button type="button" class="eye-toggle" onclick="toggleEye()" id="eye-btn"><i class="fas fa-eye" id="eye-icon"></i></button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-login" id="btn-submit">
+        <span class="btn-inner" id="btn-text">
+          <i class="fas fa-right-to-bracket"></i>
+          <span id="lbl-login-btn">登录管理后台</span>
+        </span>
+      </button>
+      <div class="err-box" id="errBox"></div>
+    </form>
+
+    <!-- Footer -->
+    <div class="card-foot">
+      <div class="sys-online">
+        <div class="sys-dot" id="sys-dot"></div>
+        <span id="lbl-online">系统在线</span>
+      </div>
+      <div class="secure-badges">
+        <i class="fas fa-shield-halved"></i>
+        <span id="lbl-secure">安全加密</span>
+        <i class="fas fa-lock"></i>
+      </div>
+      <div class="ver-badge">PRO 3.0</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══ i18n ═══
+const LANG = {
+  zh: {
+    dir:'ltr', font:"'Noto Sans SC',sans-serif",
+    title:'管理控制台',
+    user:'用户名', pass:'密码',
+    placeholder_user:'请输入管理员账号',
+    login_btn:'登录管理后台',
+    logging:'正在验证身份...',
+    online:'系统在线', secure:'安全加密',
+    err_cred:'账号或密码错误，请重新输入',
+    err_net:'服务器连接失败，请稍后重试',
+  },
+  en: {
+    dir:'ltr', font:"'Inter',sans-serif",
+    title:'Admin Dashboard',
+    user:'USERNAME', pass:'PASSWORD',
+    placeholder_user:'Enter admin username',
+    login_btn:'Sign In to Dashboard',
+    logging:'Authenticating...',
+    online:'System Online', secure:'Secured',
+    err_cred:'Invalid credentials, please try again',
+    err_net:'Server connection failed, please retry',
+  },
+};
+
+let curLang = localStorage.getItem('admin_lang') || 'zh';
+
+function switchLang(lang) {
+  curLang = lang;
+  localStorage.setItem('admin_lang', lang);
+  const l = LANG[lang];
+
+  // HTML dir + font
+  document.documentElement.lang = lang;
+  document.documentElement.dir = l.dir;
+  document.body.style.fontFamily = l.font;
+
+  // Labels
+  document.getElementById('lbl-title').textContent = 'TG Monitor Pro';
+  document.getElementById('lbl-user').textContent = l.user;
+  document.getElementById('lbl-pass').textContent = l.pass;
+  document.getElementById('lbl-login-btn').textContent = l.login_btn;
+  document.getElementById('lbl-online').textContent = l.online;
+  document.getElementById('lbl-secure').textContent = l.secure;
+  document.getElementById('username').placeholder = l.placeholder_user;
+
+  // Active btn
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === lang);
+  });
+}
+
+function toggleEye() {
+  const pwd = document.getElementById('password');
+  const ico = document.getElementById('eye-icon');
+  if (pwd.type === 'password') { pwd.type = 'text'; ico.className = 'fas fa-eye-slash'; }
+  else { pwd.type = 'password'; ico.className = 'fas fa-eye'; }
+}
+
+function showErr(msg) {
+  const el = document.getElementById('errBox');
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.style.animation = 'none';
+  void el.offsetHeight;
+  el.style.animation = '';
+  setTimeout(() => { el.style.display = 'none'; }, 5000);
+}
+
+// If already logged in, redirect
+if (localStorage.getItem('admin_token')) {
+  window.location.href = 'dashboard.html';
+}
+
+// Apply saved language on load
+switchLang(curLang);
+
+// Check system health
+async function checkHealth() {
+  try {
+    const r = await fetch('/api/health');
+    const dot = document.getElementById('sys-dot');
+    if (r.ok) {
+      dot.style.background = '#10b981';
+      dot.style.boxShadow = '0 0 8px rgba(16,185,129,.6)';
+    } else {
+      dot.style.background = '#ef4444';
+      dot.style.boxShadow = '0 0 8px rgba(239,68,68,.6)';
+    }
+  } catch {
+    const dot = document.getElementById('sys-dot');
+    dot.style.background = '#ef4444';
+    dot.style.boxShadow = '0 0 8px rgba(239,68,68,.6)';
+  }
+}
+checkHealth();
+
+// Login form
+document.getElementById('loginForm').onsubmit = async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('btn-submit');
+  const btnText = document.getElementById('btn-text');
+  const l = LANG[curLang];
+
+  btn.disabled = true;
+  btnText.innerHTML = `<i class="fas fa-spinner fa-spin"></i><span>${l.logging}</span>`;
+
+  const formData = new FormData();
+  formData.append('username', document.getElementById('username').value.trim());
+  formData.append('password', document.getElementById('password').value);
+
+  try {
+    const r = await fetch('/api/admin/login', { method: 'POST', body: formData });
+    if (r.ok) {
+      const data = await r.json();
+      localStorage.setItem('admin_token', data.access_token);
+      btnText.innerHTML = `<i class="fas fa-check"></i><span>✓</span>`;
+      btn.style.background = 'linear-gradient(135deg,#10b981,#059669)';
+      setTimeout(() => { window.location.href = 'dashboard.html'; }, 400);
+    } else {
+      showErr(l.err_cred);
+      document.getElementById('password').value = '';
+    }
+  } catch {
+    showErr(l.err_net);
+  } finally {
+    if (!localStorage.getItem('admin_token')) {
+      btn.disabled = false;
+      btnText.innerHTML = `<i class="fas fa-right-to-bracket"></i><span id="lbl-login-btn">${l.login_btn}</span>`;
+    }
+  }
+};
+</script>
+</body>
+</html>
